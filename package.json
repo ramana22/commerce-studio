@@ -9,13 +9,24 @@
     "typecheck": "turbo typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,css}\" --ignore-path .gitignore",
     "catalog:sample": "pnpm --filter @sugar-store/catalog-import create-sample",
-    "catalog:validate": "pnpm --filter @sugar-store/catalog-import validate"
+    "catalog:validate": "pnpm --filter @sugar-store/catalog-import validate",
+    "media:test-images": "pnpm --filter @sugar-store/media-pipeline create-test-images",
+    "media:process": "pnpm --filter @sugar-store/media-pipeline process",
+    "media:pipeline": "pnpm --filter @sugar-store/media-pipeline pipeline"
   },
   "pnpm": {
     "overrides": {
       "@types/react": "^19.0.0",
       "@types/react-dom": "^19.0.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "@medusajs/telemetry",
+      "msgpackr-extract",
+      "protobufjs",
+      "unrs-resolver"
+    ]
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.18.0",

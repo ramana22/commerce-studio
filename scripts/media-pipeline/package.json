@@ -1,0 +1,25 @@
+{
+  "name": "@sugar-store/media-pipeline",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "create-test-images": "tsx create-test-images.ts",
+    "process": "tsx process-images.ts",
+    "gif-to-mp4": "tsx gif-to-mp4.ts",
+    "upload": "tsx upload-r2.ts",
+    "pipeline": "tsx pipeline.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/lib-storage": "^3.600.0",
+    "sharp": "^0.34.0"
+  },
+  "devDependencies": {
+    "@sugar-store/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
