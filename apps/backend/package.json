@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@medusajs/medusa": "^2.0.0",
-    "@medusajs/framework": "^2.0.0"
+    "@medusajs/framework": "^2.0.0",
+    "@medusajs/cli": "^2.0.0",
+    "ts-node": "^10.9.0"
   },
   "devDependencies": {
     "@sugar-store/config": "workspace:*",
