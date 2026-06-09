@@ -45,6 +45,9 @@ importers:
       '@medusajs/medusa':
         specifier: ^2.0.0
         version: 2.15.5(@emotion/is-prop-valid@1.4.0)(@medusajs/cli@2.15.5(@types/node@22.19.20))(@medusajs/framework@2.15.5(@medusajs/cli@2.15.5(@types/node@22.19.20))(@types/node@22.19.20)(ioredis@5.11.1)(vite@5.4.21(@types/node@22.19.20))(zod@4.2.0))(@medusajs/icons@2.15.5(react@19.2.7))(@medusajs/ui@4.1.15(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))(@types/node@22.19.20)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(awilix@8.0.1)(posthog-node@5.36.8(rxjs@7.8.2))(react-dom@19.2.7(react@19.2.7))(react-router-dom@6.30.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
+      dotenv:
+        specifier: ^16.4.0
+        version: 16.6.1
       ts-node:
         specifier: ^10.9.0
         version: 10.9.2(@types/node@22.19.20)(typescript@5.9.3)
