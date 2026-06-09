@@ -1,0 +1,11 @@
+{
+  "extends": "@sugar-store/config/tsconfig/node",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["src/**/*.ts", "medusa-config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

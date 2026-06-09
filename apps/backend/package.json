@@ -1,0 +1,21 @@
+{
+  "name": "@sugar-store/backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "medusa develop",
+    "build": "medusa build",
+    "seed": "medusa exec ./src/scripts/seed.ts",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medusajs/medusa": "^2.0.0",
+    "@medusajs/framework": "^2.0.0"
+  },
+  "devDependencies": {
+    "@sugar-store/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
