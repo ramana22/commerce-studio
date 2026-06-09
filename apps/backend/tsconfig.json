@@ -1,6 +1,8 @@
 {
   "extends": "@sugar-store/config/tsconfig/node",
   "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "dist",
     "rootDir": ".",
     "experimentalDecorators": true,

@@ -153,6 +153,9 @@ importers:
       '@sugar-store/validators':
         specifier: workspace:*
         version: link:../../packages/validators
+      dotenv:
+        specifier: ^16.4.0
+        version: 16.6.1
       xlsx:
         specifier: 0.18.5
         version: 0.18.5
