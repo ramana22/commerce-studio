@@ -1,0 +1,23 @@
+{
+  "name": "@sugar-store/catalog-import",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "validate": "tsx validate.ts",
+    "create-sample": "tsx create-sample.ts",
+    "transform": "tsx transform.ts",
+    "import": "tsx import.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@sugar-store/validators": "workspace:*",
+    "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "@sugar-store/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}

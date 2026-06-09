@@ -7,7 +7,9 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,css}\" --ignore-path .gitignore"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,css}\" --ignore-path .gitignore",
+    "catalog:sample": "pnpm --filter @sugar-store/catalog-import create-sample",
+    "catalog:validate": "pnpm --filter @sugar-store/catalog-import validate"
   },
   "pnpm": {
     "overrides": {
