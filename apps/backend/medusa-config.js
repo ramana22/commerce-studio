@@ -1,10 +1,11 @@
 const path = require('path')
+const { defineConfig } = require('@medusajs/framework/utils')
 
 // Load .env from the monorepo root (two levels up from apps/backend/)
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') })
 
-/** @type {import('@medusajs/framework/config').ConfigModule} */
-module.exports = {
+/** @type {import('@medusajs/framework/types').ConfigModule} */
+module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
@@ -18,4 +19,4 @@ module.exports = {
         process.env.COOKIE_SECRET ?? 'supersecret-change-in-production',
     },
   },
-}
+})
