@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types'
 import type { ProductCard, SugarShade } from '@sugar-store/types'
 import { centsToUsd } from '../medusa/money'
 import { mediaUrl } from '../media/url'
+import { displayImage, isPlaceholder, bottleImage } from './placeholder'
 import type { ProductDetail, ProductDetailVariant } from './types'
 
 type Variant = HttpTypes.StoreProductVariant
@@ -78,7 +79,10 @@ export function mapProductToCard(product: Product): ProductCard {
     id: product.id,
     handle: product.handle ?? '',
     title: product.title,
-    thumbnail: product.thumbnail ?? images[0] ?? null,
+    thumbnail: displayImage(
+      product.thumbnail ?? images[0],
+      product.handle ?? product.id,
+    ),
     hover_image: mediaUrl(str(m.hover_image)),
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
@@ -109,13 +113,20 @@ export function mapProductToDetail(product: Product): ProductDetail {
   })
   const first = variants[0]
 
+  const seed = product.handle ?? product.id
+  // Swap any placeholder gallery images for the generated coloured bottle; keep
+  // real media untouched. Guarantee at least one image for the gallery.
+  const gallery = images.some((i) => !isPlaceholder(i))
+    ? images.map((i) => displayImage(i, seed))
+    : [bottleImage(seed)]
+
   return {
     id: product.id,
     handle: product.handle ?? '',
     title: product.title,
     description: product.description ?? null,
-    thumbnail: product.thumbnail ?? images[0] ?? null,
-    images,
+    thumbnail: displayImage(product.thumbnail ?? images[0], seed),
+    images: gallery,
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
     is_bestseller: m.is_bestseller === true,

@@ -54,13 +54,13 @@ export async function CategoryShowcase() {
                   />
                 )}
 
-                {/* Brand colour tint (duotone) for cohesion across tiles */}
+                {/* Light brand wash for cohesion without hiding the bottle colour */}
                 <div
-                  className="absolute inset-0 mix-blend-multiply opacity-70"
+                  className="absolute inset-0 opacity-25 mix-blend-multiply"
                   style={{ backgroundImage: `linear-gradient(150deg, ${from}, ${to})` }}
                 />
                 {/* Legibility gradient at the base */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
                 <div className="relative flex h-full flex-col justify-end">
                   <p className="font-display text-lg font-semibold drop-shadow">{c.label}</p>

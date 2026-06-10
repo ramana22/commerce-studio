@@ -1,6 +1,7 @@
 import type { HttpTypes } from '@medusajs/types'
 import type { CartLine, CartTotals, OrderSummary } from '@sugar-store/types'
 import { centsToUsd } from './money'
+import { displayImage } from '../catalog/placeholder'
 
 /** Map Medusa cart line items into the storefront's `CartLine` shape. */
 export function mapCartLines(cart: HttpTypes.StoreCart): CartLine[] {
@@ -11,7 +12,7 @@ export function mapCartLines(cart: HttpTypes.StoreCart): CartLine[] {
       variant_id: item.variant_id ?? '',
       product_id: item.product_id ?? '',
       title: item.product_title ?? item.title ?? '',
-      thumbnail: item.thumbnail ?? null,
+      thumbnail: displayImage(item.thumbnail, item.product_id ?? item.id),
       shade_name: item.variant_title ?? null,
       shade_hex:
         typeof variantMeta.shade_hex === 'string' ? variantMeta.shade_hex : null,
