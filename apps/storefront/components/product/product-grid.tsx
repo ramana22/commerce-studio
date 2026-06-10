@@ -1,4 +1,5 @@
 import type { ProductCard as ProductCardData } from '@sugar-store/types'
+import { StaggerGroup, StaggerItem } from '@/components/motion/stagger'
 import { ProductCard } from './product-card'
 
 export function ProductGrid({ products }: { products: ProductCardData[] }) {
@@ -8,12 +9,12 @@ export function ProductGrid({ products }: { products: ProductCardData[] }) {
     )
   }
   return (
-    <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <StaggerGroup className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       {products.map((p) => (
-        <li key={p.id}>
+        <StaggerItem key={p.id}>
           <ProductCard product={p} />
-        </li>
+        </StaggerItem>
       ))}
-    </ul>
+    </StaggerGroup>
   )
 }

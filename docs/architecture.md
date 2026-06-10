@@ -33,3 +33,21 @@ Browser → Vercel Edge (Next.js storefront)
 2. Sanity webhook → Medusa `product.updated` subscriber → calls `/api/revalidate`
 3. Next.js ISR purges the affected page cache
 4. Next request fetches fresh data from Sanity + Medusa
+
+## UI Layer (Phase 8)
+
+The "extraordinary" storefront experience is built on a small, consistent
+foundation rather than ad-hoc per-component styling:
+
+| Concern | Approach |
+|---------|----------|
+| Type | `next/font` — Syne (display) + Manrope (body) via CSS variables |
+| Colour | Tailwind theme overrides `pink-*` to the Sugar magenta so the brand is cohesive everywhere |
+| Animation | `motion` (Framer Motion). Reusable primitives: `Reveal`, `StaggerGroup/Item`, page `template.tsx` transitions |
+| Reduced motion | `MotionConfig reducedMotion="user"` + a `prefers-reduced-motion` CSS reset |
+| Images | `next/image` via `<AppImage>` (AVIF/WebP, lazy, fade-in). Hosts allow-listed in `next.config.ts` (Sanity CDN + media host) |
+| Cart UX | Animated slide-in `CartDrawer` (opens on add-to-bag) with `AnimatePresence` line transitions |
+| Performance | `lighthouse-budget.json` resource/timing budgets; videos `preload` lazily; `@sanity/client` kept out of client bundles |
+
+Motion components are isolated client components; pages and content blocks stay
+server-rendered and pass data through to them.

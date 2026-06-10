@@ -1,22 +1,23 @@
 import { createClient } from '@sanity/client'
+import {
+  SANITY_API_VERSION,
+  SANITY_DATASET,
+  SANITY_PROJECT_ID,
+} from './config'
 
-export const SANITY_PROJECT_ID =
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? ''
-export const SANITY_DATASET =
-  process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production'
-const API_VERSION = '2024-01-01'
+export { SANITY_PROJECT_ID, SANITY_DATASET }
 
 /**
  * Shared read-only Sanity client. CDN-cached for fast public reads.
  *
  * A placeholder projectId keeps `createClient` from throwing when Sanity is not
- * configured; `sanityFetch` and `urlForImage` both guard on the real id, so no
- * requests are ever made against the placeholder.
+ * configured; `sanityFetch` guards on the real id, so no requests are ever made
+ * against the placeholder.
  */
 export const sanityClient = createClient({
   projectId: SANITY_PROJECT_ID || 'placeholder',
   dataset: SANITY_DATASET,
-  apiVersion: API_VERSION,
+  apiVersion: SANITY_API_VERSION,
   useCdn: true,
   perspective: 'published',
 })
