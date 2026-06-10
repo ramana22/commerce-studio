@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import type { ProductCard as ProductCardData } from '@sugar-store/types'
 import { formatUsd } from '@/lib/medusa/money'
+import { pseudoRating } from '@/lib/catalog/rating'
 import { AppImage } from '@/components/ui/app-image'
+import { Stars } from '@/components/ui/stars'
 import { ShadeSwatches } from './shade-swatches'
 import { WishlistButton } from './wishlist-button'
 
@@ -17,40 +19,6 @@ function Badge({ product }: { product: ProductCardData }) {
   return (
     <span className="absolute left-2.5 top-2.5 z-10 rounded-full bg-brand-ink/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur">
       {label}
-    </span>
-  )
-}
-
-/**
- * Deterministic pseudo-rating so the catalog looks alive without a reviews
- * backend. Stable per product (derived from the id) — the same card always
- * shows the same rating/count.
- */
-function pseudoRating(id: string): { rating: number; count: number } {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  const rating = 4 + (h % 10) / 10 // 4.0 – 4.9
-  const count = 24 + (h % 920) // 24 – 943
-  return { rating: Math.round(rating * 10) / 10, count }
-}
-
-function Stars({ rating }: { rating: number }) {
-  return (
-    <span className="inline-flex items-center" aria-hidden>
-      {Array.from({ length: 5 }).map((_, i) => {
-        const fill = Math.max(0, Math.min(1, rating - i))
-        return (
-          <span key={i} className="relative text-[13px] leading-none">
-            <span className="text-neutral-300">★</span>
-            <span
-              className="absolute inset-0 overflow-hidden text-pink-600"
-              style={{ width: `${fill * 100}%` }}
-            >
-              ★
-            </span>
-          </span>
-        )
-      })}
     </span>
   )
 }
@@ -104,7 +72,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
         <div className="flex items-center gap-1.5">
-          <Stars rating={rating} />
+          <Stars rating={rating} className="text-[13px]" />
           <span className="text-[11px] text-neutral-400">({count})</span>
         </div>
         <p className="line-clamp-2 text-sm font-medium leading-snug text-brand-ink">

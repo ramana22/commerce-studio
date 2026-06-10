@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCart } from '@/components/cart/cart-context'
+import { SearchOverlay } from '@/components/search/search-overlay'
 import { NAV_CATEGORIES } from '@/lib/catalog/nav'
 import { cn } from '@/lib/utils/cn'
 
@@ -32,6 +33,7 @@ export function SiteHeader() {
   const { itemCount, openCart } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [hovered, setHovered] = useState<string | null>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -85,7 +87,7 @@ export function SiteHeader() {
 
         {/* Actions */}
         <div className="flex items-center gap-1">
-          <IconButton label="Search">
+          <IconButton label="Search" onClick={() => setSearchOpen(true)}>
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8}>
               <circle cx="11" cy="11" r="7" />
               <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
@@ -172,6 +174,8 @@ export function SiteHeader() {
           </Link>
         ))}
       </nav>
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   )
 }
