@@ -18,7 +18,6 @@ const config = {
         process.env.COOKIE_SECRET ?? 'supersecret-change-in-production',
     },
   },
-  modules: [],
 }
 
 module.exports = config
