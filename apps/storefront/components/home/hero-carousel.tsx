@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { cn } from '@/lib/utils/cn'
 
-interface Slide {
+export interface Slide {
   eyebrow: string
   title: string
   highlight: string
@@ -18,7 +18,7 @@ interface Slide {
   liquid: string
 }
 
-const SLIDES: Slide[] = [
+const DEFAULT_SLIDES: Slide[] = [
   {
     eyebrow: 'Pure Perfume Oils',
     title: 'Sourced',
@@ -93,19 +93,20 @@ function Bottle({ liquid }: { liquid: string }) {
   )
 }
 
-export function HeroCarousel() {
+export function HeroCarousel({ slides }: { slides?: Slide[] }) {
+  const data = slides && slides.length > 0 ? slides : DEFAULT_SLIDES
   const [index, setIndex] = useState(0)
   const reduce = useReducedMotion()
 
   useEffect(() => {
     if (reduce) return
-    const id = setInterval(() => setIndex((p) => (p + 1) % SLIDES.length), ROTATE_MS)
+    const id = setInterval(() => setIndex((p) => (p + 1) % data.length), ROTATE_MS)
     return () => clearInterval(id)
-  }, [reduce])
+  }, [reduce, data.length])
 
-  const slide = SLIDES[index]!
+  const slide = data[index] ?? data[0]!
   const go = (dir: 1 | -1) =>
-    setIndex((p) => (p + dir + SLIDES.length) % SLIDES.length)
+    setIndex((p) => (p + dir + data.length) % data.length)
 
   return (
     <section className="relative h-[78vh] min-h-[520px] w-full overflow-hidden text-white">
@@ -187,7 +188,7 @@ export function HeroCarousel() {
           ‹
         </button>
         <div className="flex items-center gap-2">
-          {SLIDES.map((_, i) => (
+          {data.map((_, i) => (
             <button
               key={i}
               type="button"

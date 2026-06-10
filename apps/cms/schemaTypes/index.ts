@@ -8,6 +8,11 @@ import { responsiveVideo } from './objects/responsiveVideo'
 
 // Homepage content blocks
 import { heroVideo } from './blocks/heroVideo'
+import { heroCarousel } from './blocks/heroCarousel'
+import { valueProps } from './blocks/valueProps'
+import { marqueeStrip } from './blocks/marqueeStrip'
+import { brandStory } from './blocks/brandStory'
+import { newsletter } from './blocks/newsletter'
 import { categoryTiles } from './blocks/categoryTiles'
 import { productCarousel } from './blocks/productCarousel'
 import { reelCarousel } from './blocks/reelCarousel'
@@ -30,6 +35,11 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   responsiveVideo,
   // blocks
   heroVideo,
+  heroCarousel,
+  valueProps,
+  marqueeStrip,
+  brandStory,
+  newsletter,
   categoryTiles,
   productCarousel,
   reelCarousel,
