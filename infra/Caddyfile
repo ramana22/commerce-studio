@@ -1,0 +1,15 @@
+# Caddy reverse proxy with automatic TLS for the Medusa backend.
+# Replace api.sugarcosmetics.com with your backend domain.
+
+api.sugarcosmetics.com {
+	encode zstd gzip
+	reverse_proxy backend:9000
+
+	# Basic hardening headers (storefront sets its own via Next.js).
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}

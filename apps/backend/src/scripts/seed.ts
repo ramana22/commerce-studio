@@ -39,6 +39,7 @@ import type {
 } from '@medusajs/framework/types'
 import {
   createApiKeysWorkflow,
+  createPricePreferencesWorkflow,
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
   createShippingOptionsWorkflow,
@@ -72,6 +73,15 @@ const CURRENCY = 'inr'
 // Manual providers ship with Medusa core and require no external config.
 const MANUAL_FULFILLMENT_PROVIDER = 'manual_manual'
 const MANUAL_PAYMENT_PROVIDER = 'pp_system_default'
+
+// Razorpay is registered (and added to the region) only when configured.
+const RAZORPAY_ENABLED = Boolean(
+  process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET,
+)
+const RAZORPAY_PAYMENT_PROVIDER = 'pp_razorpay_razorpay'
+
+// GST on cosmetics in India is 18%. Prices are stored tax-inclusive (MRP style).
+const GST_RATE = 18
 
 export default async function seed({
   container,
@@ -119,6 +129,10 @@ export default async function seed({
 
   // ── 3. Region: India (INR) with the manual payment provider ─────────────
   const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
+  const paymentProviders = [
+    MANUAL_PAYMENT_PROVIDER,
+    ...(RAZORPAY_ENABLED ? [RAZORPAY_PAYMENT_PROVIDER] : []),
+  ]
   let [region] = await regionService.listRegions({ name: 'India' })
   if (!region) {
     const { result } = await createRegionsWorkflow(container).run({
@@ -128,25 +142,58 @@ export default async function seed({
             name: 'India',
             currency_code: CURRENCY,
             countries: [COUNTRY],
-            payment_providers: [MANUAL_PAYMENT_PROVIDER],
+            payment_providers: paymentProviders,
           },
         ],
       },
     })
     region = result[0]!
-    logger.info('  ✓  Region "India" (INR) created')
+    logger.info(
+      `  ✓  Region "India" (INR) created — payment: ${paymentProviders.join(', ')}`,
+    )
   } else {
     logger.info('  ─  Region "India" already exists')
+    if (RAZORPAY_ENABLED) {
+      logger.info(
+        '     (Razorpay enabled — add it to the region in Admin if not already present)',
+      )
+    }
   }
 
-  // ── 4. Tax region ────────────────────────────────────────────────────────
+  // ── 4. Tax region (GST) + tax-inclusive INR pricing ──────────────────────
   try {
     await createTaxRegionsWorkflow(container).run({
-      input: [{ country_code: COUNTRY }],
+      input: [
+        {
+          country_code: COUNTRY,
+          default_tax_rate: {
+            name: `GST ${GST_RATE}%`,
+            code: 'gst',
+            rate: GST_RATE,
+          },
+        },
+      ],
     })
-    logger.info('  ✓  Tax region (India) created')
+    logger.info(`  ✓  Tax region (India, GST ${GST_RATE}%) created`)
   } catch {
     logger.info('  ─  Tax region (India) already exists')
+  }
+
+  // INR prices are entered tax-inclusive (Indian MRP convention).
+  const pricingService = container.resolve(Modules.PRICING)
+  const existingPrefs = await pricingService.listPricePreferences({
+    attribute: 'currency_code',
+    value: CURRENCY,
+  })
+  if (existingPrefs.length === 0) {
+    await createPricePreferencesWorkflow(container).run({
+      input: [
+        { attribute: 'currency_code', value: CURRENCY, is_tax_inclusive: true },
+      ],
+    })
+    logger.info('  ✓  INR pricing set to tax-inclusive')
+  } else {
+    logger.info('  ─  INR price preference already exists')
   }
 
   // ── 5. Stock location ────────────────────────────────────────────────────

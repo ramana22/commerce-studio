@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation'
 import { CheckoutSchema, type Address } from '@sugar-store/validators/checkout'
 import type { CartView } from '@/lib/cart/cart-service'
 import type { ShippingOptionView } from '@/lib/checkout/checkout-service'
-import { placeOrder } from '@/lib/checkout/actions'
+import { placeOrder, startRazorpayPayment, finalizeOrder } from '@/lib/checkout/actions'
+import { isRazorpayEnabled } from '@/lib/checkout/payment'
+import {
+  loadRazorpayScript,
+  openRazorpayCheckout,
+} from '@/lib/checkout/razorpay-client'
 import { formatInr } from '@/lib/medusa/money'
 
 type AddressForm = Omit<Address, 'country_code'>
@@ -72,14 +77,51 @@ export function CheckoutForm({
       return
     }
 
+    const checkout = parsed.data
     startTransition(async () => {
-      const result = await placeOrder(parsed.data, shippingOptionId)
-      if (result.ok) {
-        router.push(`/order/confirmed/${result.orderId}`)
+      if (isRazorpayEnabled) {
+        await payWithRazorpay(checkout)
       } else {
-        setFormError(result.error)
+        const result = await placeOrder(checkout, shippingOptionId)
+        if (result.ok) router.push(`/order/confirmed/${result.orderId}`)
+        else setFormError(result.error)
       }
     })
+  }
+
+  async function payWithRazorpay(checkout: ReturnType<typeof CheckoutSchema.parse>) {
+    const started = await startRazorpayPayment(checkout, shippingOptionId)
+    if (!started.ok) {
+      setFormError(started.error)
+      return
+    }
+    const ready = await loadRazorpayScript()
+    if (!ready) {
+      setFormError('Could not load the payment gateway. Please retry.')
+      return
+    }
+    try {
+      await openRazorpayCheckout({
+        key: started.data.key_id,
+        amount: started.data.amount,
+        currency: 'INR',
+        name: 'SUGAR Cosmetics',
+        description: 'Order payment',
+        order_id: started.data.razorpay_order_id,
+        prefill: {
+          name: `${checkout.shipping_address.first_name} ${checkout.shipping_address.last_name}`.trim(),
+          email: checkout.email,
+          contact: checkout.shipping_address.phone,
+        },
+        theme: { color: '#FF0F7B' },
+      })
+    } catch {
+      setFormError('Payment was cancelled.')
+      return
+    }
+    const finalized = await finalizeOrder()
+    if (finalized.ok) router.push(`/order/confirmed/${finalized.orderId}`)
+    else setFormError(finalized.error)
   }
 
   function field(name: keyof AddressForm, label: string, required = true) {
@@ -221,12 +263,18 @@ export function CheckoutForm({
         <button
           type="submit"
           disabled={isPending || shippingOptions.length === 0}
-          className="mt-6 w-full rounded bg-pink-600 px-6 py-3 font-medium text-white disabled:opacity-50"
+          className="mt-6 w-full rounded-full bg-pink-600 px-6 py-3.5 font-semibold text-white transition hover:bg-pink-700 disabled:opacity-50"
         >
-          {isPending ? 'Placing order…' : 'Place order'}
+          {isPending
+            ? 'Processing…'
+            : isRazorpayEnabled
+              ? 'Pay now'
+              : 'Place order'}
         </button>
         <p className="mt-2 text-center text-xs text-neutral-400">
-          Test checkout — manual payment. Real payments arrive in Phase 9.
+          {isRazorpayEnabled
+            ? 'Secure payment via Razorpay.'
+            : 'Test checkout — manual payment (set Razorpay keys to enable live payments).'}
         </p>
       </aside>
     </form>

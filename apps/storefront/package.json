@@ -14,6 +14,7 @@
     "@medusajs/types": "^2.0.0",
     "@sanity/client": "^6.21.0",
     "@sanity/image-url": "^1.1.0",
+    "@sentry/nextjs": "^8.0.0",
     "@sugar-store/types": "workspace:*",
     "@sugar-store/validators": "workspace:*",
     "clsx": "^2.1.0",
