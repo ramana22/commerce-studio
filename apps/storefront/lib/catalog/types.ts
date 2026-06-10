@@ -1,0 +1,29 @@
+/** A selectable shade/variant on the product detail page. */
+export interface ProductDetailVariant {
+  id: string
+  title: string
+  shade_name: string | null
+  shade_hex: string | null
+  sku: string | null
+  price_inr: number
+  mrp_inr: number | null
+  in_stock: boolean
+}
+
+/** Full product used by the PDP. Cards use `ProductCard` from `@sugar-store/types`. */
+export interface ProductDetail {
+  id: string
+  handle: string
+  title: string
+  description: string | null
+  thumbnail: string | null
+  images: string[]
+  badge: string | null
+  is_new_launch: boolean
+  is_bestseller: boolean
+  review_count: number | null
+  /** Default (first) variant price. */
+  price_inr: number
+  mrp_inr: number | null
+  variants: ProductDetailVariant[]
+}

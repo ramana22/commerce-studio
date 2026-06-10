@@ -104,6 +104,12 @@ importers:
       '@medusajs/types':
         specifier: ^2.0.0
         version: 2.15.5(ioredis@5.11.1)(vite@5.4.21(@types/node@22.19.20))
+      '@sanity/client':
+        specifier: ^6.21.0
+        version: 6.29.1
+      '@sanity/image-url':
+        specifier: ^1.1.0
+        version: 1.2.0
       '@sugar-store/types':
         specifier: workspace:*
         version: link:../../packages/types
