@@ -5,6 +5,7 @@ import { getProductsByCategory } from '@/lib/catalog/product-service'
 import { getCategoryBanner } from '@/lib/sanity/queries'
 import { ProductGrid } from '@/components/product/product-grid'
 import { CategoryHero } from '@/components/category/category-hero'
+import { CategoryIntro } from '@/components/category/category-intro'
 
 export async function generateMetadata({
   params,
@@ -32,11 +33,17 @@ export default async function CategoryPage({
 
   return (
     <main>
-      {banner ? <CategoryHero banner={banner} /> : null}
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="mb-6 text-2xl font-semibold">
-          {banner?.heading ?? nav.label}
-        </h1>
+      {banner ? (
+        <CategoryHero banner={banner} />
+      ) : (
+        <CategoryIntro
+          heading={nav.label}
+          tagline={nav.tagline}
+          count={products.length}
+          accent={nav.accent}
+        />
+      )}
+      <div className="mx-auto max-w-7xl px-6 py-12">
         <ProductGrid products={products} />
       </div>
     </main>

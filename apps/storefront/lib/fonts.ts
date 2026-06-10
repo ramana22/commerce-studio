@@ -1,4 +1,4 @@
-import { Manrope, Syne } from 'next/font/google'
+import { Manrope, Fraunces } from 'next/font/google'
 
 /** Body / UI typeface. */
 export const fontSans = Manrope({
@@ -7,10 +7,14 @@ export const fontSans = Manrope({
   display: 'swap',
 })
 
-/** Display typeface for headings and hero copy. */
-export const fontDisplay = Syne({
+/**
+ * Display typeface — an elegant, high-contrast serif for an upmarket perfume
+ * feel (hero copy, section headings, the wordmark).
+ */
+export const fontDisplay = Fraunces({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: ['400', '500', '600', '700', '900'],
+  style: ['normal', 'italic'],
   variable: '--font-display',
   display: 'swap',
 })
