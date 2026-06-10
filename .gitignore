@@ -127,6 +127,20 @@ dist
 
 # pnpm
 .pnpm-store
+.pnpm-debug.log*
+
+# Turbo
+.turbo
+
+# Project data (sensitive / large — never commit)
+data/master-catalog.xlsx
+data/shopify-export/
+data/media-raw/*
+!data/media-raw/.gitkeep
+data/media-processed/*
+!data/media-processed/.gitkeep
+data/media-manifest.json
+!data/.gitkeep
 
 # yarn v3
 .pnp.*

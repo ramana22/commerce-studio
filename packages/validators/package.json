@@ -1,0 +1,23 @@
+{
+  "name": "@sugar-store/validators",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./product": "./src/product.ts",
+    "./category": "./src/category.ts",
+    "./excel-row": "./src/excel-row.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@sugar-store/config": "workspace:*",
+    "typescript": "^5.5.0"
+  }
+}

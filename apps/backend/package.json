@@ -1,0 +1,25 @@
+{
+  "name": "@sugar-store/backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "medusa db:migrate && medusa develop",
+    "migrate": "medusa db:migrate",
+    "build": "medusa build",
+    "seed": "medusa exec ./src/scripts/seed.ts",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medusajs/medusa": "^2.0.0",
+    "@medusajs/framework": "^2.0.0",
+    "@medusajs/cli": "^2.0.0",
+    "dotenv": "^16.4.0",
+    "ts-node": "^10.9.0"
+  },
+  "devDependencies": {
+    "@sugar-store/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
