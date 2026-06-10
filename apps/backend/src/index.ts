@@ -1,3 +1,4 @@
 // Medusa entry point.
-// Custom modules, subscribers, and workflows added in Phase 4+.
+// Subscribers live in ./subscribers (order.placed, product.*); the Square
+// payment provider lives in ./modules/square and is registered from medusa-config.
 export {}

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /**
- * Indian postal address used for shipping and billing.
+ * US postal address used for shipping and billing.
  * Field names mirror Medusa's address payload so the schema output can be
  * passed straight to the Store API.
  */
@@ -11,13 +11,14 @@ export const AddressSchema = z.object({
   address_1: z.string().min(1, 'Address is required'),
   address_2: z.string().optional().default(''),
   city: z.string().min(1, 'City is required'),
-  /** Indian state — stored in Medusa's `province` field. */
+  /** US state (two-letter code or name) — stored in Medusa's `province` field. */
   province: z.string().min(1, 'State is required'),
-  postal_code: z.string().regex(/^\d{6}$/, 'PIN code must be 6 digits'),
-  country_code: z.string().length(2).default('in'),
+  // US ZIP code: 5 digits, optionally followed by a 4-digit ZIP+4 extension.
+  postal_code: z.string().regex(/^\d{5}(-\d{4})?$/, 'Enter a valid ZIP code'),
+  country_code: z.string().length(2).default('us'),
   phone: z
     .string()
-    .regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number'),
+    .regex(/^\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, 'Enter a valid US phone number'),
 })
 export type Address = z.infer<typeof AddressSchema>
 

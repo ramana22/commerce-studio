@@ -1,12 +1,12 @@
 import 'server-only'
 import { sdk } from '../medusa/client'
-import { paiseToInr } from '../medusa/money'
+import { centsToUsd } from '../medusa/money'
 
 /** A shipping option the customer can pick during checkout. */
 export interface ShippingOptionView {
   id: string
   name: string
-  amount_inr: number
+  amount_usd: number
 }
 
 /**
@@ -24,9 +24,9 @@ export async function getShippingOptions(
       .map((o) => ({
         id: o.id,
         name: o.name,
-        amount_inr: paiseToInr((o as { amount?: number }).amount),
+        amount_usd: centsToUsd((o as { amount?: number }).amount),
       }))
-      .sort((a, b) => a.amount_inr - b.amount_inr)
+      .sort((a, b) => a.amount_usd - b.amount_usd)
   } catch {
     return []
   }

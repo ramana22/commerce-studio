@@ -24,7 +24,7 @@ const PRODUCT_FIELDS = [
 
 let cachedRegionId: string | null = null
 
-/** Resolve (and memoize) the INR region id for price calculation. */
+/** Resolve (and memoize) the US region id for price calculation. */
 async function regionId(): Promise<string | null> {
   if (cachedRegionId) return cachedRegionId
   try {
@@ -113,6 +113,28 @@ export async function getProductsByHandles(
       .map((h) => byHandle.get(h))
       .filter((p): p is HttpTypes.StoreProduct => Boolean(p))
       .map(mapProductToCard)
+  } catch {
+    return []
+  }
+}
+
+/** Full-text search product cards by title/description (header search). */
+export async function searchProductCards(
+  query: string,
+  limit = 8,
+): Promise<ProductCard[]> {
+  const q = query.trim()
+  if (q.length < 2) return []
+  const region_id = await regionId()
+  if (!region_id) return []
+  try {
+    const { products } = await sdk.store.product.list({
+      q,
+      region_id,
+      fields: PRODUCT_FIELDS,
+      limit,
+    })
+    return products.map(mapProductToCard)
   } catch {
     return []
   }

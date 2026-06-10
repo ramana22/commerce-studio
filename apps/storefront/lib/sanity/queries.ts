@@ -22,6 +22,25 @@ const HOMEPAGE_QUERY = `*[_type == "homepage"][0]{
       heading, subheading, textColor, cta,
       video ${VIDEO}
     },
+    _type == "heroCarousel" => {
+      slides[]{
+        eyebrow, title, highlight, subtitle, ctaLabel, ctaHref,
+        bgColor, accentColor, liquidColor
+      }
+    },
+    _type == "valueProps" => {
+      items[]{ title, body, icon }
+    },
+    _type == "marqueeStrip" => {
+      items
+    },
+    _type == "brandStory" => {
+      eyebrow, heading, highlight, body, artWord,
+      stats[]{ value, label }, ctaLabel, ctaHref
+    },
+    _type == "newsletter" => {
+      eyebrow, heading, highlight, subtitle, placeholder, buttonLabel, successText
+    },
     _type == "categoryTiles" => {
       heading,
       tiles[]{ label, href, badge, image }

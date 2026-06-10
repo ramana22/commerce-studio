@@ -5,8 +5,8 @@ export interface ProductDetailVariant {
   shade_name: string | null
   shade_hex: string | null
   sku: string | null
-  price_inr: number
-  mrp_inr: number | null
+  price_usd: number
+  msrp_usd: number | null
   in_stock: boolean
 }
 
@@ -23,7 +23,7 @@ export interface ProductDetail {
   is_bestseller: boolean
   review_count: number | null
   /** Default (first) variant price. */
-  price_inr: number
-  mrp_inr: number | null
+  price_usd: number
+  msrp_usd: number | null
   variants: ProductDetailVariant[]
 }

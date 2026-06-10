@@ -8,16 +8,16 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,css}\" --ignore-path .gitignore",
-    "catalog:sample": "pnpm --filter @sugar-store/catalog-import create-sample",
-    "catalog:validate": "pnpm --filter @sugar-store/catalog-import validate",
-    "catalog:transform": "pnpm --filter @sugar-store/catalog-import transform",
-    "catalog:import": "pnpm --filter @sugar-store/catalog-import import",
-    "backend:seed": "pnpm --filter @sugar-store/backend seed",
-    "media:test-images": "pnpm --filter @sugar-store/media-pipeline create-test-images",
-    "media:process": "pnpm --filter @sugar-store/media-pipeline process",
-    "media:pipeline": "pnpm --filter @sugar-store/media-pipeline pipeline",
-    "redirects:sample": "pnpm --filter @sugar-store/shopify-redirects create-sample",
-    "redirects:build": "pnpm --filter @sugar-store/shopify-redirects build-map"
+    "catalog:sample": "pnpm --filter @sugar-store/catalog-import run create-sample",
+    "catalog:validate": "pnpm --filter @sugar-store/catalog-import run validate",
+    "catalog:transform": "pnpm --filter @sugar-store/catalog-import run transform",
+    "catalog:import": "pnpm --filter @sugar-store/catalog-import run import",
+    "backend:seed": "pnpm --filter @sugar-store/backend run seed",
+    "media:test-images": "pnpm --filter @sugar-store/media-pipeline run create-test-images",
+    "media:process": "pnpm --filter @sugar-store/media-pipeline run process",
+    "media:pipeline": "pnpm --filter @sugar-store/media-pipeline run pipeline",
+    "redirects:sample": "pnpm --filter @sugar-store/shopify-redirects run create-sample",
+    "redirects:build": "pnpm --filter @sugar-store/shopify-redirects run build-map"
   },
   "pnpm": {
     "overrides": {

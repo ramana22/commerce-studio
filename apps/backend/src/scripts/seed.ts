@@ -5,12 +5,15 @@
  *
  *   Phase 4 (catalog)        Phase 5 (money path)
  *   ─────────────────        ────────────────────
- *   - Store (INR)            - Sales channel + publishable API key
- *   - India region (INR)     - Stock location
+ *   - Store (USD)            - Sales channel + publishable API key
+ *   - US region (USD)        - Stock location
  *   - Product categories     - Manual fulfillment + manual payment providers
- *                            - Shipping profile, fulfillment set, service zone
- *                            - Standard + Express shipping options (INR)
- *                            - Tax region (India)
+ *   - Demo products          - Shipping profile, fulfillment set, service zone
+ *                            - Standard + Express shipping options (USD)
+ *                            - Tax region (US sales tax)
+ *
+ * The demo products give a freshly seeded store a populated storefront out of
+ * the box. Replace/extend them with your real catalog via `pnpm catalog:import`.
  *
  * Run after the DB has been migrated (`pnpm --filter @sugar-store/backend dev`):
  *   pnpm backend:seed
@@ -40,6 +43,7 @@ import type {
 import {
   createApiKeysWorkflow,
   createPricePreferencesWorkflow,
+  createProductsWorkflow,
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
   createShippingOptionsWorkflow,
@@ -51,37 +55,266 @@ import {
   updateStoresWorkflow,
 } from '@medusajs/medusa/core-flows'
 
-// Sugar's product categories — lower-kebab-case handles for Medusa
-const SUGAR_CATEGORIES = [
-  { name: 'Lips',      handle: 'lips'      },
-  { name: 'Eyes',      handle: 'eyes'      },
-  { name: 'Face',      handle: 'face'      },
-  { name: 'Nails',     handle: 'nails'     },
-  { name: 'Skin',      handle: 'skin'      },
-  { name: 'Gifting',   handle: 'gifting'   },
-  { name: 'Sugar Pop', handle: 'sugar-pop' },
-  { name: '249 Store', handle: '249-store' },
-  { name: 'Kits',      handle: 'kits'      },
+// BodyScent's fragrance categories — lower-kebab-case handles for Medusa.
+// These match the storefront nav (apps/storefront/lib/catalog/nav.ts).
+const STORE_CATEGORIES = [
+  { name: 'For Her',     handle: 'for-her'     },
+  { name: 'For Him',     handle: 'for-him'     },
+  { name: 'Unisex',      handle: 'unisex'      },
+  { name: 'Bestsellers', handle: 'bestsellers' },
+  { name: 'Gifting',     handle: 'gifting'     },
+  { name: 'Combos',      handle: 'combos'      },
 ] as const
 
+// ── Demo catalog ──────────────────────────────────────────────────────────────
+// A small, presentable product set so a freshly seeded store renders a populated
+// storefront immediately (instead of "No products found"). For a real catalog,
+// leave these in place and layer your products on top via `pnpm catalog:import`
+// — the importer upserts by handle and won't clash with these demo handles.
+//
+// Prices are tax-exclusive cents (USD × 100). Variants set manage_inventory:false
+// so demo products are always purchasable without an inventory-level setup.
+// Thumbnails use picsum.photos (seeded per handle) so the grid renders without
+// the R2 media pipeline configured; swap these for real R2/Sanity images later.
+interface DemoVariant {
+  title: string
+  sku: string
+  /** Selling price in cents (USD × 100). */
+  price: number
+}
+
+interface DemoProduct {
+  title: string
+  handle: string
+  description: string
+  /** Primary category handle from STORE_CATEGORIES (the product's genre). */
+  category: string
+  /** Extra category handles (e.g. 'bestsellers', 'gifting') to also list under. */
+  extraCategories?: string[]
+  /** Variant option label — 'Size' for the roll-on volume options. */
+  optionLabel: string
+  variants: DemoVariant[]
+  is_bestseller?: boolean
+  is_new_launch?: boolean
+  badge?: string
+  review_count?: number
+}
+
+/** Standard roll-on size tiers (cents). Used to build "From $8.00" pricing. */
+function sizes(prefix: string, base: number): DemoVariant[] {
+  return [
+    { title: '3 ml Roll-On', sku: `${prefix}-03`, price: base },
+    { title: '6 ml Roll-On', sku: `${prefix}-06`, price: Math.round(base * 1.75) },
+    { title: '12 ml Roll-On', sku: `${prefix}-12`, price: Math.round(base * 3) },
+  ]
+}
+
+const DEMO_PRODUCTS: DemoProduct[] = [
+  // ── For Her ──────────────────────────────────────────────────────────────
+  {
+    title: 'Velvet Oud',
+    handle: 'velvet-oud',
+    description:
+      'A warm, opulent blend of oud, rose and amber — a signature scent for evenings out.',
+    category: 'for-her',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
+    is_bestseller: true,
+    badge: '12H Wear',
+    review_count: 1284,
+    variants: sizes('HER-OUD', 1200),
+  },
+  {
+    title: 'Rose Saffron',
+    handle: 'rose-saffron',
+    description:
+      'Bulgarian rose lifted by saffron and a soft musk drydown. Romantic and long-lasting.',
+    category: 'for-her',
+    optionLabel: 'Size',
+    is_new_launch: true,
+    review_count: 642,
+    variants: sizes('HER-RSF', 900),
+  },
+  {
+    title: 'Vanilla Orchid',
+    handle: 'vanilla-orchid',
+    description:
+      'Creamy Madagascar vanilla wrapped around white orchid and sandalwood.',
+    category: 'for-her',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
+    is_bestseller: true,
+    review_count: 980,
+    variants: sizes('HER-VNL', 800),
+  },
+  {
+    title: 'Cherry Blossom',
+    handle: 'cherry-blossom',
+    description:
+      'A fresh, fruity-floral of cherry blossom, peony and a whisper of white musk.',
+    category: 'for-her',
+    optionLabel: 'Size',
+    review_count: 418,
+    variants: sizes('HER-CBL', 800),
+  },
+  // ── For Him ──────────────────────────────────────────────────────────────
+  {
+    title: 'Aqua Marine',
+    handle: 'aqua-marine',
+    description:
+      'Crisp bergamot and sea salt over cedar — a clean, aquatic scent for every day.',
+    category: 'for-him',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
+    is_bestseller: true,
+    badge: 'Bestseller',
+    review_count: 1530,
+    variants: sizes('HIM-AQM', 800),
+  },
+  {
+    title: 'Noir Extreme',
+    handle: 'noir-extreme',
+    description:
+      'Spicy cardamom, nutmeg and amber wood for a bold, magnetic trail.',
+    category: 'for-him',
+    optionLabel: 'Size',
+    is_new_launch: true,
+    review_count: 731,
+    variants: sizes('HIM-NRX', 1000),
+  },
+  {
+    title: 'Tobacco Vanille',
+    handle: 'tobacco-vanille',
+    description:
+      'Rich tobacco leaf, tonka and vanilla — a warm, smoky cold-weather favourite.',
+    category: 'for-him',
+    optionLabel: 'Size',
+    badge: '12H Wear',
+    review_count: 612,
+    variants: sizes('HIM-TBV', 1200),
+  },
+  {
+    title: 'Sport Intense',
+    handle: 'sport-intense',
+    description:
+      'Energising grapefruit and mint grounded by vetiver. Fresh, athletic, modern.',
+    category: 'for-him',
+    optionLabel: 'Size',
+    review_count: 389,
+    variants: sizes('HIM-SPT', 800),
+  },
+  // ── Unisex ───────────────────────────────────────────────────────────────
+  {
+    title: 'Oud Royale',
+    handle: 'oud-royale',
+    description:
+      'A regal, smoky oud with leather and incense. Deep, complex and unforgettable.',
+    category: 'unisex',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
+    is_bestseller: true,
+    review_count: 1102,
+    variants: sizes('UNI-ODR', 1500),
+  },
+  {
+    title: 'Santal Mist',
+    handle: 'santal-mist',
+    description:
+      'Velvety sandalwood, cardamom and violet — a serene, skin-like everyday scent.',
+    category: 'unisex',
+    optionLabel: 'Size',
+    is_new_launch: true,
+    review_count: 540,
+    variants: sizes('UNI-SNT', 1000),
+  },
+  {
+    title: 'Musk Al Tahara',
+    handle: 'musk-al-tahara',
+    description:
+      'A soft, clean white musk — powdery, comforting and beautifully subtle.',
+    category: 'unisex',
+    optionLabel: 'Size',
+    review_count: 877,
+    variants: sizes('UNI-MSK', 800),
+  },
+  {
+    title: 'Neroli Sun',
+    handle: 'neroli-sun',
+    description:
+      'Sunlit neroli and orange blossom over warm amber. Bright, golden, uplifting.',
+    category: 'unisex',
+    optionLabel: 'Size',
+    review_count: 463,
+    variants: sizes('UNI-NRL', 900),
+  },
+  // ── Gifting & Combos ─────────────────────────────────────────────────────
+  {
+    title: 'Discovery Gift Set — 5 Minis',
+    handle: 'discovery-gift-set',
+    description:
+      'Five 3 ml roll-ons in a keepsake box — the perfect introduction to BodyScent.',
+    category: 'gifting',
+    optionLabel: 'Size',
+    is_bestseller: true,
+    badge: 'Gift Ready',
+    review_count: 754,
+    variants: [{ title: '5 × 3 ml Set', sku: 'GIFT-DISCO-5', price: 3500 }],
+  },
+  {
+    title: 'Signature Duo Box',
+    handle: 'signature-duo-box',
+    description:
+      'Two 6 ml bestsellers, gift-wrapped — one for day, one for night.',
+    category: 'gifting',
+    optionLabel: 'Size',
+    is_new_launch: true,
+    review_count: 311,
+    variants: [{ title: '2 × 6 ml Set', sku: 'GIFT-DUO-2', price: 2400 }],
+  },
+  {
+    title: 'Build-Your-Own Trio',
+    handle: 'build-your-own-trio',
+    description:
+      'Pick any three 6 ml roll-ons and save — layer them to craft your signature.',
+    category: 'combos',
+    optionLabel: 'Size',
+    is_bestseller: true,
+    badge: 'Save 20%',
+    review_count: 588,
+    variants: [{ title: '3 × 6 ml Combo', sku: 'COMBO-TRIO-3', price: 3300 }],
+  },
+  {
+    title: 'Date Night Combo',
+    handle: 'date-night-combo',
+    description:
+      'A his-and-hers pairing of Velvet Oud and Noir Extreme in travel-friendly 6 ml.',
+    category: 'combos',
+    optionLabel: 'Size',
+    review_count: 244,
+    variants: [{ title: '2 × 6 ml Combo', sku: 'COMBO-DATE-2', price: 2600 }],
+  },
+]
+
 const SALES_CHANNEL_NAME = 'Sugar Online Store'
-const STOCK_LOCATION_NAME = 'Sugar Warehouse — Mumbai'
+const STOCK_LOCATION_NAME = 'Sugar Warehouse — New Jersey'
 const API_KEY_TITLE = 'Sugar Storefront'
-const COUNTRY = 'in'
-const CURRENCY = 'inr'
+const COUNTRY = 'us'
+const CURRENCY = 'usd'
 
 // Manual providers ship with Medusa core and require no external config.
 const MANUAL_FULFILLMENT_PROVIDER = 'manual_manual'
 const MANUAL_PAYMENT_PROVIDER = 'pp_system_default'
 
-// Razorpay is registered (and added to the region) only when configured.
-const RAZORPAY_ENABLED = Boolean(
-  process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET,
+// Square is registered (and added to the region) only when configured.
+const SQUARE_ENABLED = Boolean(
+  process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID,
 )
-const RAZORPAY_PAYMENT_PROVIDER = 'pp_razorpay_razorpay'
+const SQUARE_PAYMENT_PROVIDER = 'pp_square_square'
 
-// GST on cosmetics in India is 18%. Prices are stored tax-inclusive (MRP style).
-const GST_RATE = 18
+// US sales tax is destination-based and varies by state; this single default
+// rate is a placeholder — configure per-state nexus in production. Prices are
+// stored tax-exclusive (the US convention: tax is added on top at checkout).
+const SALES_TAX_RATE = 7.25
 
 export default async function seed({
   container,
@@ -110,7 +343,7 @@ export default async function seed({
     logger.info(`  ─  Sales channel "${SALES_CHANNEL_NAME}" already exists`)
   }
 
-  // ── 2. Store: INR currency + default sales channel ──────────────────────
+  // ── 2. Store: USD currency + default sales channel ──────────────────────
   const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
   const [store] = await storeService.listStores()
   if (store) {
@@ -124,22 +357,22 @@ export default async function seed({
         },
       },
     })
-    logger.info('  ✓  Store configured (INR, default sales channel)')
+    logger.info('  ✓  Store configured (USD, default sales channel)')
   }
 
-  // ── 3. Region: India (INR) with the manual payment provider ─────────────
+  // ── 3. Region: United States (USD) with the manual payment provider ─────
   const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
   const paymentProviders = [
     MANUAL_PAYMENT_PROVIDER,
-    ...(RAZORPAY_ENABLED ? [RAZORPAY_PAYMENT_PROVIDER] : []),
+    ...(SQUARE_ENABLED ? [SQUARE_PAYMENT_PROVIDER] : []),
   ]
-  let [region] = await regionService.listRegions({ name: 'India' })
+  let [region] = await regionService.listRegions({ name: 'United States' })
   if (!region) {
     const { result } = await createRegionsWorkflow(container).run({
       input: {
         regions: [
           {
-            name: 'India',
+            name: 'United States',
             currency_code: CURRENCY,
             countries: [COUNTRY],
             payment_providers: paymentProviders,
@@ -149,37 +382,41 @@ export default async function seed({
     })
     region = result[0]!
     logger.info(
-      `  ✓  Region "India" (INR) created — payment: ${paymentProviders.join(', ')}`,
+      `  ✓  Region "United States" (USD) created — payment: ${paymentProviders.join(', ')}`,
     )
   } else {
-    logger.info('  ─  Region "India" already exists')
-    if (RAZORPAY_ENABLED) {
+    logger.info('  ─  Region "United States" already exists')
+    if (SQUARE_ENABLED) {
       logger.info(
-        '     (Razorpay enabled — add it to the region in Admin if not already present)',
+        '     (Square enabled — add it to the region in Admin if not already present)',
       )
     }
   }
 
-  // ── 4. Tax region (GST) + tax-inclusive INR pricing ──────────────────────
+  // ── 4. Tax region (US sales tax) + tax-exclusive USD pricing ─────────────
   try {
     await createTaxRegionsWorkflow(container).run({
       input: [
         {
           country_code: COUNTRY,
+          // Bind the region to the system tax provider. Without this the
+          // provider_id is null and cart tax-line calculation (add-to-cart →
+          // upsert-tax-lines) fails with "Could not resolve 'null'".
+          provider_id: 'tp_system',
           default_tax_rate: {
-            name: `GST ${GST_RATE}%`,
-            code: 'gst',
-            rate: GST_RATE,
+            name: `Sales Tax ${SALES_TAX_RATE}%`,
+            code: 'sales',
+            rate: SALES_TAX_RATE,
           },
         },
       ],
     })
-    logger.info(`  ✓  Tax region (India, GST ${GST_RATE}%) created`)
+    logger.info(`  ✓  Tax region (US, sales tax ${SALES_TAX_RATE}%) created`)
   } catch {
-    logger.info('  ─  Tax region (India) already exists')
+    logger.info('  ─  Tax region (US) already exists')
   }
 
-  // INR prices are entered tax-inclusive (Indian MRP convention).
+  // US prices are entered tax-exclusive — sales tax is added on top at checkout.
   const pricingService = container.resolve(Modules.PRICING)
   const existingPrefs = await pricingService.listPricePreferences({
     attribute: 'currency_code',
@@ -188,12 +425,12 @@ export default async function seed({
   if (existingPrefs.length === 0) {
     await createPricePreferencesWorkflow(container).run({
       input: [
-        { attribute: 'currency_code', value: CURRENCY, is_tax_inclusive: true },
+        { attribute: 'currency_code', value: CURRENCY, is_tax_inclusive: false },
       ],
     })
-    logger.info('  ✓  INR pricing set to tax-inclusive')
+    logger.info('  ✓  USD pricing set to tax-exclusive')
   } else {
-    logger.info('  ─  INR price preference already exists')
+    logger.info('  ─  USD price preference already exists')
   }
 
   // ── 5. Stock location ────────────────────────────────────────────────────
@@ -210,11 +447,11 @@ export default async function seed({
           {
             name: STOCK_LOCATION_NAME,
             address: {
-              city: 'Mumbai',
+              city: 'Edison',
               country_code: COUNTRY,
-              address_1: 'Andheri East',
-              province: 'Maharashtra',
-              postal_code: '400069',
+              address_1: '100 Distribution Way',
+              province: 'NJ',
+              postal_code: '08817',
             },
           },
         ],
@@ -263,7 +500,7 @@ export default async function seed({
     logger.info('  ─  Default shipping profile already exists')
   }
 
-  // Fulfillment set with a service zone covering India
+  // Fulfillment set with a service zone covering the United States
   let [fulfillmentSet] = await fulfillmentService.listFulfillmentSets(
     { name: 'Sugar Delivery' },
     { relations: ['service_zones'] },
@@ -274,12 +511,12 @@ export default async function seed({
       type: 'shipping',
       service_zones: [
         {
-          name: 'India',
+          name: 'United States',
           geo_zones: [{ country_code: COUNTRY, type: 'country' }],
         },
       ],
     })
-    logger.info('  ✓  Fulfillment set + India service zone created')
+    logger.info('  ✓  Fulfillment set + US service zone created')
   } else {
     logger.info('  ─  Fulfillment set "Sugar Delivery" already exists')
   }
@@ -296,7 +533,7 @@ export default async function seed({
       service_zone: { id: serviceZone.id },
     })
     if (existingOptions.length === 0) {
-      // Prices are in paise (INR × 100) to match the catalog price convention.
+      // Prices are in cents (USD × 100) to match the catalog price convention.
       await createShippingOptionsWorkflow(container).run({
         input: [
           {
@@ -310,7 +547,7 @@ export default async function seed({
               description: 'Delivered in 3–5 business days',
               code: 'standard',
             },
-            prices: [{ currency_code: CURRENCY, amount: 4900 }],
+            prices: [{ currency_code: CURRENCY, amount: 599 }],
             rules: [
               { attribute: 'enabled_in_store', value: 'true', operator: 'eq' },
               { attribute: 'is_return', value: 'false', operator: 'eq' },
@@ -327,7 +564,7 @@ export default async function seed({
               description: 'Delivered in 1–2 business days',
               code: 'express',
             },
-            prices: [{ currency_code: CURRENCY, amount: 9900 }],
+            prices: [{ currency_code: CURRENCY, amount: 1499 }],
             rules: [
               { attribute: 'enabled_in_store', value: 'true', operator: 'eq' },
               { attribute: 'is_return', value: 'false', operator: 'eq' },
@@ -335,7 +572,7 @@ export default async function seed({
           },
         ],
       })
-      logger.info('  ✓  Standard (₹49) + Express (₹99) shipping options created')
+      logger.info('  ✓  Standard ($5.99) + Express ($14.99) shipping options created')
     } else {
       logger.info('  ─  Shipping options already exist')
     }
@@ -370,11 +607,17 @@ export default async function seed({
   const productService = container.resolve<IProductModuleService>(
     Modules.PRODUCT,
   )
-  const existingCategories = await productService.listProductCategories()
+  // `handle` must be selected explicitly — module-service list methods return
+  // only `id` by default, which would make every category look new and break
+  // idempotency (createProductCategories then throws on the duplicate handle).
+  const existingCategories = await productService.listProductCategories(
+    {},
+    { select: ['handle'], take: 1000 },
+  )
   const existingHandles = new Set(existingCategories.map((c) => c.handle))
 
   let categoriesCreated = 0
-  for (const cat of SUGAR_CATEGORIES) {
+  for (const cat of STORE_CATEGORIES) {
     if (existingHandles.has(cat.handle)) continue
     await productService.createProductCategories({
       name: cat.name,
@@ -390,6 +633,77 @@ export default async function seed({
       : '  ─  All product categories already exist',
   )
 
+  // ── 9. Demo products ──────────────────────────────────────────────────────
+  // Resolve category ids by handle so demo products land in the right category.
+  const allCategories = await productService.listProductCategories(
+    {},
+    { select: ['id', 'handle'], take: 1000 },
+  )
+  const categoryIdByHandle = new Map(
+    allCategories.map((c) => [c.handle, c.id]),
+  )
+
+  // Skip any demo product whose handle already exists (idempotent re-runs).
+  const existingProducts = await productService.listProducts(
+    { handle: DEMO_PRODUCTS.map((p) => p.handle) },
+    { select: ['handle'], take: 1000 },
+  )
+  const existingProductHandles = new Set(existingProducts.map((p) => p.handle))
+  const productsToCreate = DEMO_PRODUCTS.filter(
+    (p) => !existingProductHandles.has(p.handle),
+  )
+
+  if (productsToCreate.length > 0) {
+    await createProductsWorkflow(container).run({
+      input: {
+        products: productsToCreate.map((p) => {
+          // A product's genre plus any extra categories (bestsellers, etc.).
+          const categoryIds = [p.category, ...(p.extraCategories ?? [])]
+            .map((h) => categoryIdByHandle.get(h))
+            .filter((id): id is string => Boolean(id))
+          // Grayscale placeholder so cards read as cohesive product photography
+          // without the R2 media pipeline; swap for real imagery later.
+          const img = `https://picsum.photos/seed/${p.handle}/800/1000?grayscale`
+          return {
+            title: p.title,
+            handle: p.handle,
+            description: p.description,
+            status: 'published' as const,
+            thumbnail: img,
+            images: [{ url: img }],
+            shipping_profile_id: shippingProfile.id,
+            sales_channels: [{ id: salesChannel.id }],
+            ...(categoryIds.length ? { category_ids: categoryIds } : {}),
+            options: [
+              {
+                title: p.optionLabel,
+                values: p.variants.map((v) => v.title),
+              },
+            ],
+            variants: p.variants.map((v) => ({
+              title: v.title,
+              sku: v.sku,
+              // No inventory levels are seeded, so don't gate on stock.
+              manage_inventory: false,
+              prices: [{ amount: v.price, currency_code: CURRENCY }],
+              options: { [p.optionLabel]: v.title },
+            })),
+            metadata: {
+              category: p.category,
+              ...(p.is_bestseller ? { is_bestseller: true } : {}),
+              ...(p.is_new_launch ? { is_new_launch: true } : {}),
+              ...(p.badge ? { badge: p.badge } : {}),
+              ...(p.review_count ? { review_count: p.review_count } : {}),
+            },
+          }
+        }),
+      },
+    })
+    logger.info(`  ✓  ${productsToCreate.length} demo products created`)
+  } else {
+    logger.info('  ─  Demo products already exist')
+  }
+
   // ── Done ─────────────────────────────────────────────────────────────────
   logger.info('\nSeed complete!')
   logger.info('━'.repeat(64))
@@ -397,6 +711,11 @@ export default async function seed({
   logger.info(`  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${publishableKey.token}`)
   logger.info('━'.repeat(64))
   logger.info('Next steps:')
-  logger.info('  1. pnpm dlx medusa user -e admin@sugar-store.com -p <password>')
-  logger.info('  2. pnpm catalog:import')
+  logger.info('  1. Paste the publishable key above into .env, then restart the storefront')
+  logger.info('     so it can read products (otherwise the grid shows "No products found").')
+  logger.info('  2. Create an admin user whose credentials match MEDUSA_ADMIN_EMAIL')
+  logger.info('     + MEDUSA_ADMIN_PASSWORD in .env, e.g.:')
+  logger.info('     pnpm dlx medusa user -e admin@sugarcosmetics.com -p <password>')
+  logger.info('  3. (Optional) Replace the demo products with your real catalog:')
+  logger.info('     pnpm catalog:import')
 }

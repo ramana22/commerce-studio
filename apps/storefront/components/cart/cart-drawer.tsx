@@ -3,7 +3,8 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { formatInr } from '@/lib/medusa/money'
+import { formatUsd } from '@/lib/medusa/money'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { AppImage } from '@/components/ui/app-image'
 import { useCart } from './cart-context'
 
@@ -25,6 +26,12 @@ export function CartDrawer() {
 
   const lines = cart?.lines ?? []
   const totals = cart?.totals
+
+  // Free-shipping incentive ($50 threshold, matching the seed shipping copy).
+  const FREE_SHIP = 50
+  const subtotal = totals?.subtotal_usd ?? 0
+  const remaining = Math.max(0, FREE_SHIP - subtotal)
+  const progress = Math.min(100, (subtotal / FREE_SHIP) * 100)
 
   return (
     <AnimatePresence>
@@ -64,17 +71,50 @@ export function CartDrawer() {
 
             {lines.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+                <div className="grid h-16 w-16 place-items-center rounded-full bg-brand-cream text-pink-600">
+                  <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth={1.6}>
+                    <path d="M6 8h12l-1 12H7L6 8z" />
+                    <path d="M9 8a3 3 0 016 0" strokeLinecap="round" />
+                  </svg>
+                </div>
                 <p className="text-neutral-500">Your bag is empty.</p>
                 <button
                   type="button"
                   onClick={closeCart}
-                  className="rounded-full bg-pink-600 px-6 py-3 font-medium text-white"
+                  className="rounded-full bg-pink-600 px-6 py-3 font-medium text-white transition hover:bg-pink-700"
                 >
                   Continue shopping
                 </button>
               </div>
             ) : (
               <>
+                {/* Free-shipping progress */}
+                <div className="border-b border-neutral-100 px-5 py-3">
+                  <p className="text-xs text-neutral-600">
+                    {remaining > 0 ? (
+                      <>
+                        You&apos;re{' '}
+                        <span className="font-semibold text-brand-ink">
+                          {formatUsd(remaining)}
+                        </span>{' '}
+                        away from free shipping
+                      </>
+                    ) : (
+                      <span className="font-semibold text-pink-700">
+                        🎉 You&apos;ve unlocked free shipping!
+                      </span>
+                    )}
+                  </p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-100">
+                    <motion.div
+                      className="h-full rounded-full bg-pink-600"
+                      initial={false}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  </div>
+                </div>
+
                 <ul className="flex-1 overflow-y-auto px-5">
                   <AnimatePresence initial={false}>
                     {lines.map((line) => (
@@ -91,6 +131,7 @@ export function CartDrawer() {
                           {line.thumbnail ? (
                             <AppImage
                               src={line.thumbnail}
+                              fallbackSrc={bottleImage(line.product_id || line.id)}
                               alt={line.title}
                               fill
                               sizes="80px"
@@ -136,7 +177,7 @@ export function CartDrawer() {
                               </button>
                             </div>
                             <span className="text-sm font-semibold tabular-nums">
-                              {formatInr(line.total_inr)}
+                              {formatUsd(line.total_usd)}
                             </span>
                           </div>
                         </div>
@@ -158,7 +199,7 @@ export function CartDrawer() {
                   <div className="mb-3 flex justify-between font-semibold">
                     <span>Subtotal</span>
                     <span className="tabular-nums">
-                      {formatInr(totals?.subtotal_inr ?? 0)}
+                      {formatUsd(totals?.subtotal_usd ?? 0)}
                     </span>
                   </div>
                   <p className="mb-3 text-xs text-neutral-400">

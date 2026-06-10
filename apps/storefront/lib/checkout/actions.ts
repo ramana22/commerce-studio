@@ -5,12 +5,7 @@ import { CheckoutSchema, type CheckoutInput } from '@sugar-store/validators/chec
 import { sdk } from '../medusa/client'
 import { getCartId, clearCartId } from '../cart/cookies'
 import { CART_FIELDS, toCartView, type CartView } from '../cart/cart-service'
-import {
-  MANUAL_PROVIDER_ID,
-  RAZORPAY_PROVIDER_ID,
-  isRazorpayEnabled,
-  type RazorpaySessionData,
-} from './payment'
+import { MANUAL_PROVIDER_ID, SQUARE_PROVIDER_ID } from './payment'
 
 /** Result of attempting to place an order. */
 export type PlaceOrderResult =
@@ -88,19 +83,16 @@ export async function placeOrder(
 }
 
 /**
- * Razorpay step 1 — set details and initiate a Razorpay payment session.
- * Returns the data the client needs to open Razorpay Checkout.
+ * Square checkout — the storefront tokenizes the card with the Web Payments SDK
+ * first, then this action applies the details, opens a Square payment session
+ * carrying that single-use token, and completes the cart into an order. The
+ * Square provider creates the payment server-side from the token.
  */
-export async function startRazorpayPayment(
+export async function placeSquareOrder(
   input: CheckoutInput,
   shippingOptionId: string,
-): Promise<
-  | { ok: true; data: RazorpaySessionData }
-  | { ok: false; error: string; fieldErrors?: Record<string, string[]> }
-> {
-  if (!isRazorpayEnabled) {
-    return { ok: false, error: 'Razorpay is not configured.' }
-  }
+  cardToken: string,
+): Promise<PlaceOrderResult> {
   const parsed = CheckoutSchema.safeParse(input)
   if (!parsed.success) {
     return {
@@ -117,6 +109,7 @@ export async function startRazorpayPayment(
   if (!shippingOptionId) {
     return { ok: false, error: 'Please choose a delivery option.' }
   }
+  if (!cardToken) return { ok: false, error: 'Please enter your card details.' }
 
   try {
     await applyContactAndShipping(cartId, parsed.data, shippingOptionId)
@@ -124,40 +117,15 @@ export async function startRazorpayPayment(
     const { cart } = await sdk.store.cart.retrieve(cartId, {
       fields: CART_FIELDS,
     })
-    const { payment_collection } =
-      await sdk.store.payment.initiatePaymentSession(cart, {
-        provider_id: RAZORPAY_PROVIDER_ID,
-      })
+    await sdk.store.payment.initiatePaymentSession(cart, {
+      provider_id: SQUARE_PROVIDER_ID,
+      data: { token: cardToken },
+    })
 
-    const session = payment_collection.payment_sessions?.find(
-      (s) => s.provider_id === RAZORPAY_PROVIDER_ID,
-    )
-    const data = session?.data as Partial<RazorpaySessionData> | undefined
-    if (!data?.razorpay_order_id || !data.key_id) {
-      return { ok: false, error: 'Could not start the Razorpay payment.' }
-    }
-
-    return {
-      ok: true,
-      data: {
-        razorpay_order_id: data.razorpay_order_id,
-        key_id: data.key_id,
-        amount: Number(data.amount ?? 0),
-      },
-    }
+    return completeCart(cartId)
   } catch (err) {
     return { ok: false, error: (err as Error).message }
   }
-}
-
-/**
- * Razorpay step 2 — complete the cart after the customer has paid. The provider
- * authorizes the payment by verifying its status with Razorpay server-side.
- */
-export async function finalizeOrder(): Promise<PlaceOrderResult> {
-  const cartId = await getCartId()
-  if (!cartId) return { ok: false, error: 'Your cart has expired.' }
-  return completeCart(cartId)
 }
 
 /** Complete a cart into an order and clear the cart cookie on success. */

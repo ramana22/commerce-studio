@@ -59,7 +59,7 @@ function preprocessRow(raw: Record<string, unknown>): Record<string, unknown> {
   const toNum = (v: unknown): unknown => {
     if (typeof v === 'number') return v
     if (typeof v === 'string' && v.trim() !== '') {
-      const n = Number(v.replace(/[₹,\s]/g, ''))
+      const n = Number(v.replace(/[$,\s]/g, ''))
       return isNaN(n) ? v : n
     }
     return v
@@ -73,7 +73,7 @@ function preprocessRow(raw: Record<string, unknown>): Record<string, unknown> {
   return {
     ...raw,
     price: toNum(raw['price']),
-    mrp: toNum(raw['mrp']),
+    msrp: toNum(raw['msrp']),
     stock: toNum(raw['stock']),
     review_count:
       raw['review_count'] != null && raw['review_count'] !== ''
@@ -185,10 +185,10 @@ function main(): void {
   )
 
   // 7. Price integrity (belt-and-suspenders — schema already checks per row) ───
-  const priceViolations = results.filter((r) => r.data && r.data.mrp < r.data.price)
+  const priceViolations = results.filter((r) => r.data && r.data.msrp < r.data.price)
   row(
     priceViolations.length === 0 ? '✓' : '✗',
-    'Price integrity (MRP ≥ price)',
+    'Price integrity (MSRP ≥ price)',
     priceViolations.length > 0 ? `${priceViolations.length} row(s) violate this` : '',
   )
 

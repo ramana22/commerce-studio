@@ -1,8 +1,17 @@
 import type { Metadata } from 'next'
 import { getHomepage } from '@/lib/sanity/queries'
-import { getProductCards } from '@/lib/catalog/product-service'
+import {
+  getProductCards,
+  getProductsByCategory,
+} from '@/lib/catalog/product-service'
 import { BlockRenderer } from '@/components/blocks/block-renderer'
-import { ProductGrid } from '@/components/product/product-grid'
+import { HeroCarousel } from '@/components/home/hero-carousel'
+import { Marquee } from '@/components/home/marquee'
+import { ValueProps } from '@/components/home/value-props'
+import { CategoryShowcase } from '@/components/home/category-showcase'
+import { ProductRail } from '@/components/home/product-rail'
+import { BrandStory } from '@/components/home/brand-story'
+import { Newsletter } from '@/components/home/newsletter'
 
 export async function generateMetadata(): Promise<Metadata> {
   const homepage = await getHomepage()
@@ -16,21 +25,54 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const homepage = await getHomepage()
 
+  // Sanity-configured homepage wins when present.
   if (homepage?.blocks?.length) {
     return <BlockRenderer blocks={homepage.blocks} />
   }
 
-  // Fallback when Sanity has no homepage configured yet.
-  const products = await getProductCards({ limit: 12 })
+  // Rich default landing, built from live Medusa products. Rails are driven by
+  // the perfume categories so the home stays on-theme; if none are populated
+  // yet (e.g. before re-seeding) we fall back to a general "featured" rail.
+  const [bestsellers, forHer, forHim] = await Promise.all([
+    getProductsByCategory('bestsellers', 12),
+    getProductsByCategory('for-her', 12),
+    getProductsByCategory('for-him', 12),
+  ])
+  const hasCategoryData =
+    bestsellers.length > 0 || forHer.length > 0 || forHim.length > 0
+  const featured = hasCategoryData ? [] : await getProductCards({ limit: 12 })
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">Shop SUGAR</h1>
-      <p className="mt-1 text-sm text-neutral-500">
-        Configure the homepage in Sanity Studio to replace this default grid.
-      </p>
-      <div className="mt-8">
-        <ProductGrid products={products} />
-      </div>
+    <main>
+      <HeroCarousel />
+      <Marquee />
+      <ValueProps />
+      <CategoryShowcase />
+      <ProductRail
+        eyebrow="Most loved"
+        title="Bestsellers"
+        products={bestsellers}
+        viewAllHref="/bestsellers"
+      />
+      <ProductRail
+        eyebrow="Featured"
+        title="Shop the Collection"
+        products={featured}
+      />
+      <ProductRail
+        eyebrow="For Her"
+        title="Floral & Gourmand"
+        products={forHer}
+        viewAllHref="/for-her"
+      />
+      <BrandStory />
+      <ProductRail
+        eyebrow="For Him"
+        title="Woody & Aquatic"
+        products={forHim}
+        viewAllHref="/for-him"
+      />
+      <Newsletter />
     </main>
   )
 }

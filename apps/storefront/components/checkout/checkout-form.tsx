@@ -1,17 +1,24 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckoutSchema, type Address } from '@sugar-store/validators/checkout'
 import type { CartView } from '@/lib/cart/cart-service'
 import type { ShippingOptionView } from '@/lib/checkout/checkout-service'
-import { placeOrder, startRazorpayPayment, finalizeOrder } from '@/lib/checkout/actions'
-import { isRazorpayEnabled } from '@/lib/checkout/payment'
+import { placeOrder, placeSquareOrder } from '@/lib/checkout/actions'
 import {
-  loadRazorpayScript,
-  openRazorpayCheckout,
-} from '@/lib/checkout/razorpay-client'
-import { formatInr } from '@/lib/medusa/money'
+  isSquareEnabled,
+  SQUARE_APPLICATION_ID,
+  SQUARE_LOCATION_ID,
+  SQUARE_ENVIRONMENT,
+} from '@/lib/checkout/payment'
+import {
+  loadSquareSdk,
+  createSquareCard,
+  tokenizeSquareCard,
+  type SquareCard,
+} from '@/lib/checkout/square-client'
+import { formatUsd } from '@/lib/medusa/money'
 
 type AddressForm = Omit<Address, 'country_code'>
 
@@ -44,12 +51,44 @@ export function CheckoutForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string | null>(null)
 
+  const cardRef = useRef<SquareCard | null>(null)
+
+  // Mount the Square card form (an SDK-managed iframe) when Square is configured.
+  useEffect(() => {
+    if (!isSquareEnabled) return
+    let active = true
+    let card: SquareCard | null = null
+    void (async () => {
+      const ready = await loadSquareSdk(SQUARE_ENVIRONMENT)
+      if (!ready || !active) return
+      try {
+        card = await createSquareCard(
+          SQUARE_APPLICATION_ID,
+          SQUARE_LOCATION_ID,
+          '#card-container',
+        )
+        if (!active) {
+          void card.destroy?.()
+          return
+        }
+        cardRef.current = card
+      } catch {
+        if (active) setFormError('Could not load the card form. Please refresh.')
+      }
+    })()
+    return () => {
+      active = false
+      void card?.destroy?.()
+      cardRef.current = null
+    }
+  }, [])
+
   const selectedShipping = useMemo(
     () => shippingOptions.find((o) => o.id === shippingOptionId),
     [shippingOptions, shippingOptionId],
   )
   const estimatedTotal =
-    cart.totals.subtotal_inr + (selectedShipping?.amount_inr ?? 0)
+    cart.totals.subtotal_usd + (selectedShipping?.amount_usd ?? 0)
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -57,7 +96,7 @@ export function CheckoutForm({
 
     const input = {
       email,
-      shipping_address: { ...shipping, country_code: 'in' },
+      shipping_address: { ...shipping, country_code: 'us' },
       billing_same_as_shipping: true,
     }
 
@@ -79,49 +118,28 @@ export function CheckoutForm({
 
     const checkout = parsed.data
     startTransition(async () => {
-      if (isRazorpayEnabled) {
-        await payWithRazorpay(checkout)
+      if (isSquareEnabled) {
+        const card = cardRef.current
+        if (!card) {
+          setFormError('The card form is still loading. Please wait a moment.')
+          return
+        }
+        let token: string
+        try {
+          token = await tokenizeSquareCard(card)
+        } catch (err) {
+          setFormError((err as Error).message)
+          return
+        }
+        const result = await placeSquareOrder(checkout, shippingOptionId, token)
+        if (result.ok) router.push(`/order/confirmed/${result.orderId}`)
+        else setFormError(result.error)
       } else {
         const result = await placeOrder(checkout, shippingOptionId)
         if (result.ok) router.push(`/order/confirmed/${result.orderId}`)
         else setFormError(result.error)
       }
     })
-  }
-
-  async function payWithRazorpay(checkout: ReturnType<typeof CheckoutSchema.parse>) {
-    const started = await startRazorpayPayment(checkout, shippingOptionId)
-    if (!started.ok) {
-      setFormError(started.error)
-      return
-    }
-    const ready = await loadRazorpayScript()
-    if (!ready) {
-      setFormError('Could not load the payment gateway. Please retry.')
-      return
-    }
-    try {
-      await openRazorpayCheckout({
-        key: started.data.key_id,
-        amount: started.data.amount,
-        currency: 'INR',
-        name: 'SUGAR Cosmetics',
-        description: 'Order payment',
-        order_id: started.data.razorpay_order_id,
-        prefill: {
-          name: `${checkout.shipping_address.first_name} ${checkout.shipping_address.last_name}`.trim(),
-          email: checkout.email,
-          contact: checkout.shipping_address.phone,
-        },
-        theme: { color: '#FF0F7B' },
-      })
-    } catch {
-      setFormError('Payment was cancelled.')
-      return
-    }
-    const finalized = await finalizeOrder()
-    if (finalized.ok) router.push(`/order/confirmed/${finalized.orderId}`)
-    else setFormError(finalized.error)
   }
 
   function field(name: keyof AddressForm, label: string, required = true) {
@@ -182,9 +200,9 @@ export function CheckoutForm({
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {field('city', 'City')}
             {field('province', 'State')}
-            {field('postal_code', 'PIN code')}
+            {field('postal_code', 'ZIP code')}
           </div>
-          <div className="mt-4">{field('phone', 'Mobile number')}</div>
+          <div className="mt-4">{field('phone', 'Phone')}</div>
         </section>
 
         <section>
@@ -211,13 +229,26 @@ export function CheckoutForm({
                     {opt.name}
                   </span>
                   <span className="tabular-nums">
-                    {opt.amount_inr === 0 ? 'Free' : formatInr(opt.amount_inr)}
+                    {opt.amount_usd === 0 ? 'Free' : formatUsd(opt.amount_usd)}
                   </span>
                 </label>
               ))}
             </div>
           )}
         </section>
+
+        {isSquareEnabled ? (
+          <section>
+            <h2 className="mb-3 font-semibold">Payment</h2>
+            <div
+              id="card-container"
+              className="rounded border border-neutral-300 p-3"
+            />
+            <p className="mt-2 text-xs text-neutral-400">
+              Card details are processed securely by Square.
+            </p>
+          </section>
+        ) : null}
       </div>
 
       {/* ── Right: order summary ── */}
@@ -231,29 +262,32 @@ export function CheckoutForm({
                 {line.shade_name ? ` · ${line.shade_name}` : ''} ×{' '}
                 {line.quantity}
               </span>
-              <span className="tabular-nums">{formatInr(line.total_inr)}</span>
+              <span className="tabular-nums">{formatUsd(line.total_usd)}</span>
             </li>
           ))}
         </ul>
         <dl className="mt-4 space-y-2 border-t border-neutral-200 pt-4 text-sm">
           <div className="flex justify-between">
             <dt className="text-neutral-500">Subtotal</dt>
-            <dd className="tabular-nums">{formatInr(cart.totals.subtotal_inr)}</dd>
+            <dd className="tabular-nums">{formatUsd(cart.totals.subtotal_usd)}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-neutral-500">Shipping</dt>
             <dd className="tabular-nums">
               {selectedShipping
-                ? selectedShipping.amount_inr === 0
+                ? selectedShipping.amount_usd === 0
                   ? 'Free'
-                  : formatInr(selectedShipping.amount_inr)
+                  : formatUsd(selectedShipping.amount_usd)
                 : '—'}
             </dd>
           </div>
           <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold">
             <dt>Total</dt>
-            <dd className="tabular-nums">{formatInr(estimatedTotal)}</dd>
+            <dd className="tabular-nums">{formatUsd(estimatedTotal)}</dd>
           </div>
+          <p className="text-xs text-neutral-400">
+            Sales tax calculated at checkout.
+          </p>
         </dl>
 
         {formError ? (
@@ -267,14 +301,14 @@ export function CheckoutForm({
         >
           {isPending
             ? 'Processing…'
-            : isRazorpayEnabled
+            : isSquareEnabled
               ? 'Pay now'
               : 'Place order'}
         </button>
         <p className="mt-2 text-center text-xs text-neutral-400">
-          {isRazorpayEnabled
-            ? 'Secure payment via Razorpay.'
-            : 'Test checkout — manual payment (set Razorpay keys to enable live payments).'}
+          {isSquareEnabled
+            ? 'Secure payment via Square.'
+            : 'Test checkout — manual payment (set Square keys to enable live payments).'}
         </p>
       </aside>
     </form>

@@ -6,7 +6,7 @@ import { STORE_CURRENCY } from '../medusa/config'
 import { getCartId, setCartId } from './cookies'
 import { CART_FIELDS, toCartView, type CartView } from './cart-service'
 
-/** Resolve the region the cart should transact in (INR / India). */
+/** Resolve the region the cart should transact in (USD / United States). */
 async function resolveRegionId(): Promise<string> {
   const { regions } = await sdk.store.region.list()
   const region =

@@ -13,7 +13,7 @@ export const MEDUSA_PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? ''
 
 /** ISO country code used as the default checkout region. */
-export const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY ?? 'in'
+export const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY ?? 'us'
 
 /** Currency the store transacts in. */
-export const STORE_CURRENCY = 'inr'
+export const STORE_CURRENCY = 'usd'

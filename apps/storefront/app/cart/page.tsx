@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { formatInr } from '@/lib/medusa/money'
+import { formatUsd } from '@/lib/medusa/money'
 import { useCart } from '@/components/cart/cart-context'
 import { CartLineItem } from '@/components/cart/cart-line-item'
 
@@ -42,17 +42,17 @@ export default function CartPage() {
       <dl className="mt-6 space-y-2">
         <div className="flex justify-between text-sm">
           <dt className="text-neutral-500">Subtotal</dt>
-          <dd className="tabular-nums">{formatInr(totals.subtotal_inr)}</dd>
+          <dd className="tabular-nums">{formatUsd(totals.subtotal_usd)}</dd>
         </div>
-        {totals.discount_inr > 0 ? (
+        {totals.discount_usd > 0 ? (
           <div className="flex justify-between text-sm text-green-700">
             <dt>Discount</dt>
-            <dd className="tabular-nums">−{formatInr(totals.discount_inr)}</dd>
+            <dd className="tabular-nums">−{formatUsd(totals.discount_usd)}</dd>
           </div>
         ) : null}
         <div className="flex justify-between border-t border-neutral-200 pt-2 text-lg font-semibold">
           <dt>Total</dt>
-          <dd className="tabular-nums">{formatInr(totals.total_inr)}</dd>
+          <dd className="tabular-nums">{formatUsd(totals.total_usd)}</dd>
         </div>
         <p className="text-right text-xs text-neutral-400">
           Shipping &amp; taxes calculated at checkout

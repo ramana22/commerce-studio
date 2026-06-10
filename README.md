@@ -112,4 +112,4 @@ docs/                 Architecture, data model, runbooks
 | **6** | Sanity CMS block schemas |
 | **7** | Storefront with real data |
 | **8** | Extraordinary UI layer (Motion, Lighthouse budgets) |
-| **9** | Hardening + cutover (real payments, GST, monitoring) |
+| **9** | Hardening + cutover (real payments, sales tax, monitoring) |

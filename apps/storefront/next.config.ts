@@ -1,6 +1,31 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import dotenv from 'dotenv'
 import type { NextConfig } from 'next'
+
+// Next.js only auto-loads .env files from this app's own directory, but the
+// monorepo keeps a single source-of-truth .env at the repo root (the Medusa
+// backend loads it the same way, via dotenv). Load that root .env here so the
+// storefront picks up NEXT_PUBLIC_* values — most importantly the Medusa
+// publishable key. Without it, Store API requests go out with no
+// x-publishable-api-key header, Medusa answers 400, and every product list
+// comes back empty ("No products found").
+//
+// dotenv is used here rather than @next/env's loadEnvConfig because Next.js
+// already calls loadEnvConfig for this app's directory before evaluating
+// next.config; @next/env caches that result and short-circuits any later call,
+// so it would never read the root .env. dotenv has no such cache and, by
+// default, does not override variables already present in process.env — so any
+// app-level .env still wins.
+function findRepoRoot(): string {
+  let dir = process.cwd()
+  while (path.dirname(dir) !== dir) {
+    if (fs.existsSync(path.join(dir, 'pnpm-workspace.yaml'))) return dir
+    dir = path.dirname(dir)
+  }
+  return process.cwd()
+}
+dotenv.config({ path: path.join(findRepoRoot(), '.env') })
 
 interface Redirect {
   source: string
@@ -35,9 +60,19 @@ function loadRedirects(): Redirect[] {
 const config: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
+    // The demo catalog renders coloured perfume-bottle SVG data URIs as
+    // placeholders (see lib/catalog/placeholder.ts). These are self-generated,
+    // never user input, so allowing SVG is safe; the CSP keeps them inert.
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.sanity.io' },
       { protocol: 'https', hostname: 'media.sugarcosmetics.com' },
+      // Demo placeholder photo hosts (real product imagery replaces these).
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'loremflickr.com' },
+      { protocol: 'https', hostname: '*.staticflickr.com' },
       ...mediaPattern(),
     ],
   },

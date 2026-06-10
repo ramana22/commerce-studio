@@ -41,8 +41,8 @@ export interface MedusaProductPayload {
   options: Array<{ title: string; values: string[] }>
   variants: MedusaVariantPayload[]
   metadata: Record<string, unknown>
-  /** Resolved category IDs injected by import.ts before the API call. */
-  category_ids?: string[]
+  /** Resolved category associations injected by import.ts before the API call. */
+  categories?: Array<{ id: string }>
 }
 
 // ── Core transform ────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ export interface MedusaProductPayload {
  * Groups Excel rows by handle (each group = one Medusa product)
  * and maps fields to the Medusa Admin API shape.
  *
- * Prices are stored in paise (INR × 100) as required by Medusa.
+ * Prices are stored in cents (USD × 100) as required by Medusa.
  */
 export function transformRows(rows: ExcelCatalogRow[]): MedusaProductPayload[] {
   const grouped = new Map<string, ExcelCatalogRow[]>()
@@ -67,18 +67,21 @@ export function transformRows(rows: ExcelCatalogRow[]): MedusaProductPayload[] {
     const first = variantRows[0]!
     const hasShades = variantRows.some((v) => !!v.shade_name)
 
+    // Medusa requires every product to carry at least one option with a value
+    // per variant. Shade-less products (e.g. a single-SKU sunscreen) get a
+    // synthetic "Default" option so the create/update payload stays valid.
     const options: MedusaProductPayload['options'] = hasShades
       ? [{ title: 'Shade', values: variantRows.map((v) => v.shade_name ?? 'Default') }]
-      : []
+      : [{ title: 'Default', values: ['Default'] }]
 
     const variants: MedusaVariantPayload[] = variantRows.map((v) => {
-      const priceInPaise = Math.round(v.price * 100)
-      const mrpInPaise = Math.round(v.mrp * 100)
+      const priceInCents = Math.round(v.price * 100)
+      const msrpInCents = Math.round(v.msrp * 100)
 
       const price: MedusaPrice = {
-        currency_code: 'inr',
-        amount: priceInPaise,
-        ...(v.mrp > v.price && { compare_at_price: mrpInPaise }),
+        currency_code: 'usd',
+        amount: priceInCents,
+        ...(v.msrp > v.price && { compare_at_price: msrpInCents }),
       }
 
       return {
@@ -87,7 +90,9 @@ export function transformRows(rows: ExcelCatalogRow[]): MedusaProductPayload[] {
         manage_inventory: true,
         allow_backorder: false,
         prices: [price],
-        options: hasShades ? { Shade: v.shade_name ?? 'Default' } : ({} as Record<string, string>),
+        options: (hasShades
+          ? { Shade: v.shade_name ?? 'Default' }
+          : { Default: 'Default' }) as Record<string, string>,
         metadata: {
           shade_hex: v.shade_hex ?? null,
           media_filename: v.main_image,
@@ -134,7 +139,7 @@ function preprocessRow(raw: Record<string, unknown>): Record<string, unknown> {
   const toNum = (v: unknown): unknown => {
     if (typeof v === 'number') return v
     if (typeof v === 'string' && v.trim() !== '') {
-      const n = Number(v.replace(/[₹,\s]/g, ''))
+      const n = Number(v.replace(/[$,\s]/g, ''))
       return isNaN(n) ? v : n
     }
     return v
@@ -148,7 +153,7 @@ function preprocessRow(raw: Record<string, unknown>): Record<string, unknown> {
   return {
     ...raw,
     price: toNum(raw['price']),
-    mrp: toNum(raw['mrp']),
+    msrp: toNum(raw['msrp']),
     stock: toNum(raw['stock']),
     review_count:
       raw['review_count'] != null && raw['review_count'] !== ''
@@ -216,11 +221,11 @@ function main(): void {
       `  ${String(i + 1).padStart(2, ' ')}. ${p.handle}  [${p.variants.length} variant${p.variants.length !== 1 ? 's' : ''}]${badges ? `  (${badges})` : ''}`,
     )
     p.variants.forEach((v) => {
-      const price = (v.prices[0]!.amount / 100).toFixed(0)
-      const mrp = v.prices[0]!.compare_at_price
-        ? ` / MRP ₹${(v.prices[0]!.compare_at_price / 100).toFixed(0)}`
+      const price = (v.prices[0]!.amount / 100).toFixed(2)
+      const msrp = v.prices[0]!.compare_at_price
+        ? ` / MSRP $${(v.prices[0]!.compare_at_price / 100).toFixed(2)}`
         : ''
-      console.log(`       ↳ ${v.title}  SKU: ${v.sku}  ₹${price}${mrp}  stock: ${v._inventory_quantity}`)
+      console.log(`       ↳ ${v.title}  SKU: ${v.sku}  $${price}${msrp}  stock: ${v._inventory_quantity}`)
     })
   })
   console.log()
