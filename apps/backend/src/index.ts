@@ -1,3 +1,4 @@
 // Medusa entry point.
-// Custom modules, subscribers, and workflows added in Phase 4+.
+// Subscribers live in ./subscribers (order.placed, product.*); the Razorpay
+// payment provider lives in ./modules/razorpay and is registered from medusa-config.
 export {}
