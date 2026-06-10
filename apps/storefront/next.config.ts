@@ -1,6 +1,25 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { loadEnvConfig } from '@next/env'
 import type { NextConfig } from 'next'
+
+// Next.js only auto-loads .env files from this app's own directory, but the
+// monorepo keeps a single source-of-truth .env at the repo root (the Medusa
+// backend loads it the same way). Load that root .env here so the storefront
+// picks up NEXT_PUBLIC_* values — most importantly the Medusa publishable key.
+// Without it, Store API requests go out with no x-publishable-api-key header,
+// Medusa answers 400, and every product list comes back empty ("No products
+// found"). Local app-level .env files still win, since loadEnvConfig does not
+// overwrite variables already present in process.env.
+function findRepoRoot(): string {
+  let dir = process.cwd()
+  while (path.dirname(dir) !== dir) {
+    if (fs.existsSync(path.join(dir, 'pnpm-workspace.yaml'))) return dir
+    dir = path.dirname(dir)
+  }
+  return process.cwd()
+}
+loadEnvConfig(findRepoRoot())
 
 interface Redirect {
   source: string
