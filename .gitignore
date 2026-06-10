@@ -78,6 +78,9 @@ web_modules/
 .next
 out
 
+# Sanity Studio build + runtime cache
+.sanity
+
 # Nuxt.js build / generate output
 .nuxt
 dist

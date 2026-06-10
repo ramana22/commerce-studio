@@ -10,12 +10,42 @@
 - **ProductCollection** — maps to navigation categories (LIPS, EYES, FACE, etc.)
 - **Order** — cart → payment → fulfillment lifecycle
 
-## Sanity Documents
+## Sanity Schemas (Phase 6)
 
-- **Homepage** — array of block references (heroVideo, categoryTiles, productCarousel, …)
-- **AnnouncementBar** — rotating messages with CTA
-- **CategoryBanner** — per-collection hero image/video
-- **CartUpsells** — products shown in cart drawer "LIMITED TIME BONUS" rail
+Schemas live in `apps/cms/schemaTypes`, grouped into reusable objects, homepage
+blocks, and documents.
+
+### Objects (reusable)
+
+- **cta** — label + link + style (primary / secondary / text)
+- **seo** — meta title, description, social share image
+- **productRef** — links a placement to a Medusa product by `handle`
+- **responsiveVideo** — desktop MP4 + optional mobile MP4 + required poster
+
+### Homepage blocks
+
+Composed in any order inside `homepage.blocks`:
+
+- **heroVideo** — full-bleed background video with overlaid copy + CTA
+- **categoryTiles** — grid of image tiles linking to categories
+- **productCarousel** — rail sourced from a hand-picked list, a category, bestsellers, or new launches
+- **reelCarousel** — Instagram-style vertical videos, each optionally shoppable
+- **offerBanner** — promo strip with optional background image + countdown
+
+### Documents
+
+- **homepage** *(singleton)* — `blocks[]` + SEO
+- **announcementBar** *(singleton)* — rotating messages, interval, colours
+- **categoryBanner** — per-category hero (image or video); one per Medusa category handle
+- **cartUpsells** *(singleton)* — "LIMITED TIME BONUS" product rail for the cart drawer
+
+### Medusa linkage
+
+Sanity and Medusa are separate systems. Merchandised products are referenced by
+the stable Medusa **handle** (via `productRef` / `categoryHandle`); the
+storefront resolves live product data (price, stock, media) at request time.
+Singletons are pinned to a fixed document id and locked down in
+`sanity.config.ts` (no create / duplicate / delete).
 
 ## Money Path (Phase 5)
 
