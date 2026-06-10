@@ -46,6 +46,29 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Warm ember gradient text for headings / the wordmark. */
+  .text-gradient-ember {
+    background-image: linear-gradient(100deg, #b5571f 0%, #c9923e 55%, #e3a877 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Animated brand gradient surface (pair with `animate-gradient-x`). */
+  .bg-ember-animated {
+    background-image: linear-gradient(120deg, #1a1310, #3b2730, #b5571f, #c9923e);
+    background-size: 300% 300%;
+  }
+
+  /* Subtle film grain to add depth over gradient hero art. */
+  .bg-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E");
+  }
+
+  .hover-lift {
+    @apply transition-all duration-500 ease-smooth hover:-translate-y-1.5 hover:shadow-hover;
+  }
 }
 
 /* Respect the user's reduced-motion preference everywhere. */

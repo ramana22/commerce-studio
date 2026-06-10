@@ -55,17 +55,15 @@ import {
   updateStoresWorkflow,
 } from '@medusajs/medusa/core-flows'
 
-// Sugar's product categories — lower-kebab-case handles for Medusa
-const SUGAR_CATEGORIES = [
-  { name: 'Lips',        handle: 'lips'        },
-  { name: 'Eyes',        handle: 'eyes'        },
-  { name: 'Face',        handle: 'face'        },
-  { name: 'Nails',       handle: 'nails'       },
-  { name: 'Skin',        handle: 'skin'        },
+// BodyScent's fragrance categories — lower-kebab-case handles for Medusa.
+// These match the storefront nav (apps/storefront/lib/catalog/nav.ts).
+const STORE_CATEGORIES = [
+  { name: 'For Her',     handle: 'for-her'     },
+  { name: 'For Him',     handle: 'for-him'     },
+  { name: 'Unisex',      handle: 'unisex'      },
+  { name: 'Bestsellers', handle: 'bestsellers' },
   { name: 'Gifting',     handle: 'gifting'     },
-  { name: 'Sugar Pop',   handle: 'sugar-pop'   },
-  { name: 'Value Store', handle: 'value-store' },
-  { name: 'Kits',        handle: 'kits'        },
+  { name: 'Combos',      handle: 'combos'      },
 ] as const
 
 // ── Demo catalog ──────────────────────────────────────────────────────────────
@@ -83,18 +81,18 @@ interface DemoVariant {
   sku: string
   /** Selling price in cents (USD × 100). */
   price: number
-  /** Optional swatch colour shown on shade-based products. */
-  hex?: string
 }
 
 interface DemoProduct {
   title: string
   handle: string
   description: string
-  /** Category handle from SUGAR_CATEGORIES. */
+  /** Primary category handle from STORE_CATEGORIES (the product's genre). */
   category: string
-  /** Variant option label — 'Shade' for colour cosmetics, 'Default' otherwise. */
-  optionLabel: 'Shade' | 'Default'
+  /** Extra category handles (e.g. 'bestsellers', 'gifting') to also list under. */
+  extraCategories?: string[]
+  /** Variant option label — 'Size' for the roll-on volume options. */
+  optionLabel: string
   variants: DemoVariant[]
   is_bestseller?: boolean
   is_new_launch?: boolean
@@ -102,144 +100,198 @@ interface DemoProduct {
   review_count?: number
 }
 
+/** Standard roll-on size tiers (cents). Used to build "From $8.00" pricing. */
+function sizes(prefix: string, base: number): DemoVariant[] {
+  return [
+    { title: '3 ml Roll-On', sku: `${prefix}-03`, price: base },
+    { title: '6 ml Roll-On', sku: `${prefix}-06`, price: Math.round(base * 1.75) },
+    { title: '12 ml Roll-On', sku: `${prefix}-12`, price: Math.round(base * 3) },
+  ]
+}
+
 const DEMO_PRODUCTS: DemoProduct[] = [
+  // ── For Her ──────────────────────────────────────────────────────────────
   {
-    title: 'Matte Attack Transferproof Lipstick',
-    handle: 'matte-attack-lipstick',
+    title: 'Velvet Oud',
+    handle: 'velvet-oud',
     description:
-      'A weightless, transferproof matte lipstick with intense colour payoff that lasts all day.',
-    category: 'lips',
-    optionLabel: 'Shade',
+      'A warm, opulent blend of oud, rose and amber — a signature scent for evenings out.',
+    category: 'for-her',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
     is_bestseller: true,
+    badge: '12H Wear',
     review_count: 1284,
-    variants: [
-      { title: 'Brick Flick', sku: 'LIP-MATT-01', price: 1499, hex: '#A0382E' },
-      { title: 'Mauve-rick', sku: 'LIP-MATT-02', price: 1499, hex: '#9B6A6C' },
-      { title: 'Nude-tella', sku: 'LIP-MATT-03', price: 1499, hex: '#C68B7B' },
-    ],
+    variants: sizes('HER-OUD', 1200),
   },
   {
-    title: 'Smudge Me Not Liquid Lipstick',
-    handle: 'smudge-me-not-liquid-lipstick',
+    title: 'Rose Saffron',
+    handle: 'rose-saffron',
     description:
-      'A high-impact liquid lipstick that dries to a comfortable matte finish and never bleeds.',
-    category: 'lips',
-    optionLabel: 'Shade',
+      'Bulgarian rose lifted by saffron and a soft musk drydown. Romantic and long-lasting.',
+    category: 'for-her',
+    optionLabel: 'Size',
     is_new_launch: true,
     review_count: 642,
-    variants: [
-      { title: 'Stay-Pent', sku: 'LIP-SMNG-01', price: 1299, hex: '#7B2D26' },
-      { title: 'Plum Yum', sku: 'LIP-SMNG-02', price: 1299, hex: '#6E3551' },
-    ],
+    variants: sizes('HER-RSF', 900),
   },
   {
-    title: 'Eye Warned Intense Kohl Eyeliner',
-    handle: 'eye-warned-eyeliner',
+    title: 'Vanilla Orchid',
+    handle: 'vanilla-orchid',
     description:
-      'A deeply pigmented, smudge-proof kohl that glides on for a crisp, all-day line.',
-    category: 'eyes',
-    optionLabel: 'Shade',
-    badge: 'Vegan',
-    review_count: 903,
-    variants: [
-      { title: 'Pitch Black', sku: 'EYE-KOHL-01', price: 999, hex: '#0B0B0B' },
-    ],
+      'Creamy Madagascar vanilla wrapped around white orchid and sandalwood.',
+    category: 'for-her',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
+    is_bestseller: true,
+    review_count: 980,
+    variants: sizes('HER-VNL', 800),
   },
   {
-    title: 'Arch Arrival Microblade Brow Pencil',
-    handle: 'arch-arrival-brow-pencil',
+    title: 'Cherry Blossom',
+    handle: 'cherry-blossom',
     description:
-      'An ultra-fine brow pencil that draws hair-like strokes for naturally defined brows.',
-    category: 'eyes',
-    optionLabel: 'Shade',
+      'A fresh, fruity-floral of cherry blossom, peony and a whisper of white musk.',
+    category: 'for-her',
+    optionLabel: 'Size',
     review_count: 418,
-    variants: [
-      { title: 'Soft Brown', sku: 'EYE-BROW-01', price: 899, hex: '#6B4A35' },
-      { title: 'Deep Espresso', sku: 'EYE-BROW-02', price: 899, hex: '#3B2A22' },
-    ],
+    variants: sizes('HER-CBL', 800),
   },
+  // ── For Him ──────────────────────────────────────────────────────────────
   {
-    title: 'Blush Of Life Powder Blush',
-    handle: 'blush-of-life-powder-blush',
+    title: 'Aqua Marine',
+    handle: 'aqua-marine',
     description:
-      'A silky, buildable powder blush that melts into skin for a soft, natural flush.',
-    category: 'face',
-    optionLabel: 'Shade',
+      'Crisp bergamot and sea salt over cedar — a clean, aquatic scent for every day.',
+    category: 'for-him',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
     is_bestseller: true,
-    review_count: 756,
-    variants: [
-      { title: 'Rose Bae', sku: 'FAC-BLSH-01', price: 1199, hex: '#D17A7A' },
-      { title: 'Coral Crush', sku: 'FAC-BLSH-02', price: 1199, hex: '#E08A6A' },
-    ],
+    badge: 'Bestseller',
+    review_count: 1530,
+    variants: sizes('HIM-AQM', 800),
   },
   {
-    title: 'Base Of Spades Liquid Foundation',
-    handle: 'base-of-spades-foundation',
+    title: 'Noir Extreme',
+    handle: 'noir-extreme',
     description:
-      'A medium-to-full coverage foundation with a natural matte finish and 24-hour wear.',
-    category: 'face',
-    optionLabel: 'Shade',
+      'Spicy cardamom, nutmeg and amber wood for a bold, magnetic trail.',
+    category: 'for-him',
+    optionLabel: 'Size',
     is_new_launch: true,
-    review_count: 531,
-    variants: [
-      { title: 'Fair Rose', sku: 'FAC-FND-01', price: 1999, hex: '#F1D2BE' },
-      { title: 'Light Sand', sku: 'FAC-FND-02', price: 1999, hex: '#E3B89A' },
-      { title: 'Medium Honey', sku: 'FAC-FND-03', price: 1999, hex: '#C89368' },
-      { title: 'Deep Cocoa', sku: 'FAC-FND-04', price: 1999, hex: '#7A4B30' },
-    ],
+    review_count: 731,
+    variants: sizes('HIM-NRX', 1000),
   },
   {
-    title: 'Set The Tone Loose Setting Powder',
-    handle: 'set-the-tone-loose-powder',
+    title: 'Tobacco Vanille',
+    handle: 'tobacco-vanille',
     description:
-      'A finely milled translucent powder that blurs pores and locks makeup in place.',
-    category: 'face',
-    optionLabel: 'Default',
-    review_count: 289,
-    variants: [
-      { title: 'Translucent', sku: 'FAC-PWD-01', price: 1399, hex: '#EDE3D8' },
-    ],
+      'Rich tobacco leaf, tonka and vanilla — a warm, smoky cold-weather favourite.',
+    category: 'for-him',
+    optionLabel: 'Size',
+    badge: '12H Wear',
+    review_count: 612,
+    variants: sizes('HIM-TBV', 1200),
   },
   {
-    title: 'Nailed It Gel Nail Lacquer',
-    handle: 'nailed-it-nail-lacquer',
+    title: 'Sport Intense',
+    handle: 'sport-intense',
     description:
-      'A high-shine, chip-resistant gel-effect lacquer that dries fast for a salon finish.',
-    category: 'nails',
-    optionLabel: 'Shade',
-    review_count: 374,
-    variants: [
-      { title: 'Red Carpet', sku: 'NAI-LAQ-01', price: 599, hex: '#B11226' },
-      { title: 'Mint Condition', sku: 'NAI-LAQ-02', price: 599, hex: '#9FD8C0' },
-      { title: 'Lilac Lane', sku: 'NAI-LAQ-03', price: 599, hex: '#B7A2D6' },
-    ],
+      'Energising grapefruit and mint grounded by vetiver. Fresh, athletic, modern.',
+    category: 'for-him',
+    optionLabel: 'Size',
+    review_count: 389,
+    variants: sizes('HIM-SPT', 800),
   },
+  // ── Unisex ───────────────────────────────────────────────────────────────
   {
-    title: 'Dew Drop Daily Moisturizer',
-    handle: 'dew-drop-moisturizer',
+    title: 'Oud Royale',
+    handle: 'oud-royale',
     description:
-      'A lightweight, fast-absorbing moisturizer with hyaluronic acid and SPF 30 protection.',
-    category: 'skin',
-    optionLabel: 'Default',
+      'A regal, smoky oud with leather and incense. Deep, complex and unforgettable.',
+    category: 'unisex',
+    extraCategories: ['bestsellers'],
+    optionLabel: 'Size',
     is_bestseller: true,
-    badge: 'SPF 30',
     review_count: 1102,
-    variants: [
-      { title: 'Default', sku: 'SKN-MST-01', price: 1699 },
-    ],
+    variants: sizes('UNI-ODR', 1500),
   },
   {
-    title: 'Clean Slate Gentle Face Wash',
-    handle: 'clean-slate-face-wash',
+    title: 'Santal Mist',
+    handle: 'santal-mist',
     description:
-      'A sulphate-free gel cleanser that lifts away makeup and impurities without stripping skin.',
-    category: 'skin',
-    optionLabel: 'Default',
+      'Velvety sandalwood, cardamom and violet — a serene, skin-like everyday scent.',
+    category: 'unisex',
+    optionLabel: 'Size',
     is_new_launch: true,
-    review_count: 467,
-    variants: [
-      { title: 'Default', sku: 'SKN-CLN-01', price: 799 },
-    ],
+    review_count: 540,
+    variants: sizes('UNI-SNT', 1000),
+  },
+  {
+    title: 'Musk Al Tahara',
+    handle: 'musk-al-tahara',
+    description:
+      'A soft, clean white musk — powdery, comforting and beautifully subtle.',
+    category: 'unisex',
+    optionLabel: 'Size',
+    review_count: 877,
+    variants: sizes('UNI-MSK', 800),
+  },
+  {
+    title: 'Neroli Sun',
+    handle: 'neroli-sun',
+    description:
+      'Sunlit neroli and orange blossom over warm amber. Bright, golden, uplifting.',
+    category: 'unisex',
+    optionLabel: 'Size',
+    review_count: 463,
+    variants: sizes('UNI-NRL', 900),
+  },
+  // ── Gifting & Combos ─────────────────────────────────────────────────────
+  {
+    title: 'Discovery Gift Set — 5 Minis',
+    handle: 'discovery-gift-set',
+    description:
+      'Five 3 ml roll-ons in a keepsake box — the perfect introduction to BodyScent.',
+    category: 'gifting',
+    optionLabel: 'Size',
+    is_bestseller: true,
+    badge: 'Gift Ready',
+    review_count: 754,
+    variants: [{ title: '5 × 3 ml Set', sku: 'GIFT-DISCO-5', price: 3500 }],
+  },
+  {
+    title: 'Signature Duo Box',
+    handle: 'signature-duo-box',
+    description:
+      'Two 6 ml bestsellers, gift-wrapped — one for day, one for night.',
+    category: 'gifting',
+    optionLabel: 'Size',
+    is_new_launch: true,
+    review_count: 311,
+    variants: [{ title: '2 × 6 ml Set', sku: 'GIFT-DUO-2', price: 2400 }],
+  },
+  {
+    title: 'Build-Your-Own Trio',
+    handle: 'build-your-own-trio',
+    description:
+      'Pick any three 6 ml roll-ons and save — layer them to craft your signature.',
+    category: 'combos',
+    optionLabel: 'Size',
+    is_bestseller: true,
+    badge: 'Save 20%',
+    review_count: 588,
+    variants: [{ title: '3 × 6 ml Combo', sku: 'COMBO-TRIO-3', price: 3300 }],
+  },
+  {
+    title: 'Date Night Combo',
+    handle: 'date-night-combo',
+    description:
+      'A his-and-hers pairing of Velvet Oud and Noir Extreme in travel-friendly 6 ml.',
+    category: 'combos',
+    optionLabel: 'Size',
+    review_count: 244,
+    variants: [{ title: '2 × 6 ml Combo', sku: 'COMBO-DATE-2', price: 2600 }],
   },
 ]
 
@@ -565,7 +617,7 @@ export default async function seed({
   const existingHandles = new Set(existingCategories.map((c) => c.handle))
 
   let categoriesCreated = 0
-  for (const cat of SUGAR_CATEGORIES) {
+  for (const cat of STORE_CATEGORIES) {
     if (existingHandles.has(cat.handle)) continue
     await productService.createProductCategories({
       name: cat.name,
@@ -605,20 +657,23 @@ export default async function seed({
     await createProductsWorkflow(container).run({
       input: {
         products: productsToCreate.map((p) => {
-          const categoryId = categoryIdByHandle.get(p.category)
+          // A product's genre plus any extra categories (bestsellers, etc.).
+          const categoryIds = [p.category, ...(p.extraCategories ?? [])]
+            .map((h) => categoryIdByHandle.get(h))
+            .filter((id): id is string => Boolean(id))
+          // Grayscale placeholder so cards read as cohesive product photography
+          // without the R2 media pipeline; swap for real imagery later.
+          const img = `https://picsum.photos/seed/${p.handle}/800/1000?grayscale`
           return {
             title: p.title,
             handle: p.handle,
             description: p.description,
             status: 'published' as const,
-            // Seeded placeholder image so the grid renders without R2 media.
-            thumbnail: `https://picsum.photos/seed/${p.handle}/800/1000`,
-            images: [
-              { url: `https://picsum.photos/seed/${p.handle}/800/1000` },
-            ],
+            thumbnail: img,
+            images: [{ url: img }],
             shipping_profile_id: shippingProfile.id,
             sales_channels: [{ id: salesChannel.id }],
-            ...(categoryId ? { category_ids: [categoryId] } : {}),
+            ...(categoryIds.length ? { category_ids: categoryIds } : {}),
             options: [
               {
                 title: p.optionLabel,
@@ -632,7 +687,6 @@ export default async function seed({
               manage_inventory: false,
               prices: [{ amount: v.price, currency_code: CURRENCY }],
               options: { [p.optionLabel]: v.title },
-              ...(v.hex ? { metadata: { shade_hex: v.hex } } : {}),
             })),
             metadata: {
               category: p.category,
