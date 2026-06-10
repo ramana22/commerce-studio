@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { CartView } from '@/lib/cart/cart-service'
 import { addToCart, removeLineItem, updateLineItem } from '@/lib/cart/actions'
+import { track } from '@/lib/analytics/events'
 
 interface CartContextValue {
   cart: CartView | null
@@ -46,6 +47,7 @@ export function CartProvider({
   const addItem = useCallback((variantId: string, quantity = 1) => {
     // Open the drawer immediately for responsive feedback, then sync.
     setIsOpen(true)
+    track('add_to_cart', { variant_id: variantId, quantity })
     startTransition(async () => {
       setCart(await addToCart(variantId, quantity))
     })

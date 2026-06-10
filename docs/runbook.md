@@ -92,3 +92,65 @@ Without Square keys the storefront falls back to the manual test provider.
 4. `data/shopify-redirects.csv` in place; `pnpm redirects:build` run.
 5. Sentry receiving events; backups scheduled.
 6. Point DNS at Vercel; monitor first live orders in the Square dashboard.
+
+## Instrumentation & Analytics (Phase 10)
+
+### Funnel + Web Vitals (RUM)
+
+The storefront emits funnel events and per-page Core Web Vitals to
+`POST /api/analytics`:
+
+- Funnel: `product_viewed` → `add_to_cart` → `checkout_started` → `purchase`.
+- Web Vitals: `web_vital` (LCP, CLS, INP, FCP, TTFB) from real sessions.
+
+Every event is logged server-side (greppable with `[analytics]`), so the funnel
+is observable even with no provider. To pipe into a dashboard, set
+`ANALYTICS_WEBHOOK_URL` to any JSON sink (PostHog capture endpoint, a collector,
+etc.) — events are forwarded verbatim.
+
+### Error tracking on the money path
+
+With `SENTRY_DSN` set, errors are captured (not just logged) on:
+
+- Storefront checkout server actions (`placeOrder`, `placeSquareOrder`,
+  `completeCart`).
+- Backend `order.placed` subscriber (confirmation email + payment capture).
+- Square **webhook** path — a failed signature verification is reported as an
+  `error`-level event; refund failures are captured with context.
+
+### Daily reconciliation job
+
+`apps/backend/src/jobs/reconcile-orders.ts` runs daily at 02:00 and flags:
+
+- **stuck** orders — older than 1h with no captured payment, and
+- **mismatched** orders — captured amount ≠ order total.
+
+Findings are logged (`[reconcile]`) and sent to Sentry so they alert. The job is
+read-only. Run it on demand to verify: `npx medusa exec ./src/jobs/reconcile-orders.ts`.
+
+## Backups & Restore (Phase 10)
+
+Backups run nightly via `infra/backup.sh` (`pg_dump` → gzip → R2 `backups/`).
+
+**Restore a specific dump** into a target database:
+
+```bash
+TARGET_DATABASE_URL=postgres://user:pass@host:5432/dbname \
+  ./infra/restore.sh /path/to/sugar_store_YYYYMMDD_HHMMSS.sql.gz
+```
+
+**Prove backups work (do this at least once, then quarterly).** Pulls the latest
+R2 dump, restores into a throwaway DB, runs sanity counts, and drops it — never
+touching production:
+
+```bash
+CLOUDFLARE_R2_BUCKET_NAME=sugar-store-media \
+ADMIN_DATABASE_URL=postgres://user:pass@host:5432/postgres \
+  ./infra/verify-restore.sh
+```
+
+Record the date of the last successful restore test here:
+
+| Date | Backup file | Restored by | Result |
+|------|-------------|-------------|--------|
+| _TBD_ | _run verify-restore.sh_ | | |
