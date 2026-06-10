@@ -6,6 +6,7 @@ import { sdk } from '../medusa/client'
 import { getCartId, clearCartId } from '../cart/cookies'
 import { CART_FIELDS, toCartView, type CartView } from '../cart/cart-service'
 import { MANUAL_PROVIDER_ID, SQUARE_PROVIDER_ID } from './payment'
+import { captureError } from '../observability/capture'
 
 /** Result of attempting to place an order. */
 export type PlaceOrderResult =
@@ -78,6 +79,7 @@ export async function placeOrder(
 
     return completeCart(cartId)
   } catch (err) {
+    await captureError(err, { scope: 'placeOrder', cartId })
     return { ok: false, error: (err as Error).message }
   }
 }
@@ -124,6 +126,7 @@ export async function placeSquareOrder(
 
     return completeCart(cartId)
   } catch (err) {
+    await captureError(err, { scope: 'placeSquareOrder', cartId })
     return { ok: false, error: (err as Error).message }
   }
 }
@@ -144,6 +147,7 @@ async function completeCart(cartId: string): Promise<PlaceOrderResult> {
     revalidatePath('/cart')
     return { ok: true, orderId: result.order.id }
   } catch (err) {
+    await captureError(err, { scope: 'completeCart', cartId })
     return { ok: false, error: (err as Error).message }
   }
 }
