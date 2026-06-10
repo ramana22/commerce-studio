@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./product": "./src/product.ts",
     "./category": "./src/category.ts",
-    "./excel-row": "./src/excel-row.ts"
+    "./excel-row": "./src/excel-row.ts",
+    "./checkout": "./src/checkout.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

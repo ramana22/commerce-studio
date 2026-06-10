@@ -64,6 +64,19 @@ export interface CartLine {
   total_inr: number
 }
 
+/** Aggregated cart money lines — all values in full INR. */
+export interface CartTotals {
+  subtotal_inr: number
+  /** Selected shipping method cost; 0 before a method is chosen. */
+  shipping_inr: number
+  tax_inr: number
+  /** Total discount applied across promotions; 0 when none. */
+  discount_inr: number
+  total_inr: number
+  /** Sum of line quantities. */
+  item_count: number
+}
+
 /** Minimal order summary for confirmation page and order history. */
 export interface OrderSummary {
   id: string
