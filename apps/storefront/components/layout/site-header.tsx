@@ -56,7 +56,12 @@ export function SiteHeader() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5">
         {/* Wordmark */}
-        <Link href="/" className="flex items-center gap-2" aria-label="BodyScent home">
+        <Link
+          href="/"
+          onMouseEnter={() => setHovered(null)}
+          className="relative z-40 flex items-center gap-2"
+          aria-label="BodyScent home"
+        >
           <span className="grid h-9 w-9 place-items-center rounded-full bg-ember-sheen text-sm font-bold text-white shadow-glow">
             B
           </span>
