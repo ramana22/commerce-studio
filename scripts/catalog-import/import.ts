@@ -8,7 +8,8 @@
  * Prerequisites:
  *   1. Backend running:   pnpm --filter @sugar-store/backend dev
  *   2. Backend seeded:    pnpm backend:seed
- *   3. Admin user:        medusa user -e admin@sugar-store.com -p <password>
+ *   3. Admin user:        medusa user -e admin@sugarcosmetics.com -p <password>
+ *                         (credentials must match MEDUSA_ADMIN_EMAIL/PASSWORD in .env)
  *   4. .env vars set:     MEDUSA_ADMIN_EMAIL, MEDUSA_ADMIN_PASSWORD
  *                         (or MEDUSA_API_KEY for API-key auth)
  *
@@ -16,17 +17,25 @@
  *   pnpm catalog:import --dry-run    # validate + preview, no writes
  *   pnpm catalog:import              # actually upsert products
  */
-import 'dotenv/config'
+import * as dotenv from 'dotenv'
 import * as XLSX from 'xlsx'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { ExcelCatalogRowSchema, REQUIRED_EXCEL_COLUMNS, type ExcelCatalogRow } from '@sugar-store/validators/excel-row'
 import { transformRows, type MedusaProductPayload } from './transform'
 
+// Load env from the monorepo root. pnpm runs this script with cwd set to the
+// package directory, so dotenv's default (cwd/.env) lookup would miss the root .env.
+dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const DRY_RUN = process.argv.includes('--dry-run')
-const MEDUSA_URL = (process.env['MEDUSA_URL'] ?? 'http://localhost:9000').replace(/\/$/, '')
+const MEDUSA_URL = (
+  process.env['MEDUSA_BACKEND_URL'] ??
+  process.env['MEDUSA_URL'] ??
+  'http://localhost:9000'
+).replace(/\/$/, '')
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -117,14 +126,26 @@ async function fetchCategoryMap(auth: string): Promise<Map<string, string>> {
   return map
 }
 
-async function findProductByHandle(auth: string, handle: string): Promise<string | null> {
+interface ExistingProduct {
+  id: string
+  variants: Array<{ id: string; sku: string | null }>
+}
+
+async function findProductByHandle(
+  auth: string,
+  handle: string,
+): Promise<ExistingProduct | null> {
   const res = await fetch(
-    `${MEDUSA_URL}/admin/products?handle=${encodeURIComponent(handle)}&limit=1`,
+    `${MEDUSA_URL}/admin/products?handle=${encodeURIComponent(handle)}&limit=1&fields=id,variants.id,variants.sku`,
     { headers: { Authorization: auth } },
   )
   if (!res.ok) return null
-  const data = (await res.json()) as { products: Array<{ id: string }> }
-  return data.products[0]?.id ?? null
+  const data = (await res.json()) as {
+    products: Array<{ id: string; variants?: Array<{ id: string; sku: string | null }> }>
+  }
+  const product = data.products[0]
+  if (!product) return null
+  return { id: product.id, variants: product.variants ?? [] }
 }
 
 async function createProduct(
@@ -157,6 +178,115 @@ async function updateProduct(
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`Update product ${id} failed (${res.status}): ${text}`)
+  }
+}
+
+// ── Sales channel + inventory ──────────────────────────────────────────────────
+
+/**
+ * The storefront sales channel created by `backend:seed`. Must match
+ * SALES_CHANNEL_NAME in apps/backend/src/scripts/seed.ts — products linked to
+ * any other channel (e.g. Medusa's auto-created "Default Sales Channel") are
+ * invisible to the storefront's publishable key.
+ */
+const STOREFRONT_SALES_CHANNEL_NAME = 'Sugar Online Store'
+
+/** Resolve the storefront sales channel and stock location from `backend:seed`. */
+async function fetchDefaultIds(auth: string): Promise<{
+  salesChannelId: string | null
+  locationId: string | null
+  shippingProfileId: string | null
+}> {
+  const scRes = await fetch(`${MEDUSA_URL}/admin/sales-channels?limit=100`, {
+    headers: { Authorization: auth },
+  })
+  const scData = scRes.ok
+    ? ((await scRes.json()) as { sales_channels: Array<{ id: string; name: string }> })
+    : { sales_channels: [] }
+  const channels = scData.sales_channels
+
+  const slRes = await fetch(`${MEDUSA_URL}/admin/stock-locations?limit=1`, {
+    headers: { Authorization: auth },
+  })
+  const slData = slRes.ok
+    ? ((await slRes.json()) as { stock_locations: Array<{ id: string }> })
+    : { stock_locations: [] }
+
+  // Products must carry a shipping profile, otherwise checkout fails with
+  // "cart items require shipping profiles that are not satisfied".
+  const spRes = await fetch(`${MEDUSA_URL}/admin/shipping-profiles?limit=10`, {
+    headers: { Authorization: auth },
+  })
+  const spData = spRes.ok
+    ? ((await spRes.json()) as { shipping_profiles: Array<{ id: string; type: string }> })
+    : { shipping_profiles: [] }
+  const profiles = spData.shipping_profiles
+
+  return {
+    salesChannelId:
+      channels.find((c) => c.name === STOREFRONT_SALES_CHANNEL_NAME)?.id ??
+      channels[0]?.id ??
+      null,
+    locationId: slData.stock_locations[0]?.id ?? null,
+    shippingProfileId:
+      profiles.find((p) => p.type === 'default')?.id ?? profiles[0]?.id ?? null,
+  }
+}
+
+/** Resolve each variant's inventory item id so stock can be set per SKU. */
+async function fetchVariantInventoryItems(
+  auth: string,
+  productId: string,
+): Promise<Array<{ sku: string | null; inventoryItemId: string }>> {
+  const res = await fetch(
+    `${MEDUSA_URL}/admin/products/${productId}?fields=variants.sku,variants.inventory_items.inventory_item_id`,
+    { headers: { Authorization: auth } },
+  )
+  if (!res.ok) return []
+  const data = (await res.json()) as {
+    product: {
+      variants?: Array<{
+        sku: string | null
+        inventory_items?: Array<{ inventory_item_id: string }>
+      }>
+    }
+  }
+  const out: Array<{ sku: string | null; inventoryItemId: string }> = []
+  for (const v of data.product.variants ?? []) {
+    const inventoryItemId = v.inventory_items?.[0]?.inventory_item_id
+    if (inventoryItemId) out.push({ sku: v.sku, inventoryItemId })
+  }
+  return out
+}
+
+/** Set stock at a location — creates the level, or updates it if it exists. */
+async function setInventoryLevel(
+  auth: string,
+  inventoryItemId: string,
+  locationId: string,
+  quantity: number,
+): Promise<void> {
+  const create = await fetch(
+    `${MEDUSA_URL}/admin/inventory-items/${inventoryItemId}/location-levels`,
+    {
+      method: 'POST',
+      headers: { Authorization: auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ location_id: locationId, stocked_quantity: quantity }),
+    },
+  )
+  if (create.ok) return
+
+  const update = await fetch(
+    `${MEDUSA_URL}/admin/inventory-items/${inventoryItemId}/location-levels/${locationId}`,
+    {
+      method: 'POST',
+      headers: { Authorization: auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stocked_quantity: quantity }),
+    },
+  )
+  if (!update.ok) {
+    const text = await update.text()
+    throw new Error(`Set inventory for ${inventoryItemId} failed (${update.status}): ${text}`)
   }
 }
 
@@ -258,6 +388,20 @@ async function main(): Promise<void> {
     console.log('  ─  Could not fetch categories (run backend:seed first?)')
   }
 
+  // Resolve the default sales channel (products must be linked to it to appear
+  // in the storefront), the stock location (used to seed inventory levels), and
+  // the shipping profile (required for checkout to complete).
+  const { salesChannelId, locationId, shippingProfileId } = await fetchDefaultIds(auth)
+  console.log(
+    `  ${salesChannelId ? '✓' : '─'}  Sales channel ${salesChannelId ? 'resolved' : 'not found — products may be hidden from the storefront'}`,
+  )
+  console.log(
+    `  ${locationId ? '✓' : '─'}  Stock location ${locationId ? 'resolved' : 'not found — inventory will not be seeded'}`,
+  )
+  console.log(
+    `  ${shippingProfileId ? '✓' : '─'}  Shipping profile ${shippingProfileId ? 'resolved' : 'not found — checkout may fail'}`,
+  )
+
   // 5. Upsert products ────────────────────────────────────────────────────────
   console.log()
   let created = 0
@@ -279,23 +423,47 @@ async function main(): Promise<void> {
       ({ _inventory_quantity: _iq, ...v }) => v,
     )
 
+    // Stock per SKU, kept aside so it can be applied after the product exists.
+    const qtyBySku = new Map(product.variants.map((v) => [v.sku, v._inventory_quantity]))
+
     const payload: ProductApiPayload = {
       ...product,
-      ...(categoryId && { category_ids: [categoryId] }),
+      ...(categoryId && { categories: [{ id: categoryId }] }),
+      ...(salesChannelId && { sales_channels: [{ id: salesChannelId }] }),
+      ...(shippingProfileId && { shipping_profile_id: shippingProfileId }),
       variants: apiVariants,
     }
 
     try {
-      const existingId = await findProductByHandle(auth, product.handle)
+      const existing = await findProductByHandle(auth, product.handle)
+      let productId: string
 
-      if (existingId) {
-        await updateProduct(auth, existingId, payload)
+      if (existing) {
+        // Match incoming variants to existing ones by SKU and reuse their IDs,
+        // so Medusa updates variants in place instead of recreating them (which
+        // fails on the unique SKU constraint). This keeps re-imports idempotent.
+        const idBySku = new Map(existing.variants.map((v) => [v.sku, v.id]))
+        const variants = apiVariants.map((v) => {
+          const id = idBySku.get(v.sku)
+          return id ? { ...v, id } : v
+        })
+        await updateProduct(auth, existing.id, { ...payload, variants })
+        productId = existing.id
         console.log(`  ↻  ${product.handle}  (updated)`)
         updated++
       } else {
-        await createProduct(auth, payload)
+        const createdProduct = await createProduct(auth, payload)
+        productId = createdProduct.id
         console.log(`  ✓  ${product.handle}  (created)`)
         created++
+      }
+
+      // Seed stock at the default location (create-or-update — idempotent).
+      if (locationId) {
+        const invItems = await fetchVariantInventoryItems(auth, productId)
+        for (const item of invItems) {
+          await setInventoryLevel(auth, item.inventoryItemId, locationId, qtyBySku.get(item.sku ?? '') ?? 0)
+        }
       }
     } catch (err) {
       console.error(`  ✗  ${product.handle}: ${(err as Error).message}`)

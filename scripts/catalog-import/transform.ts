@@ -41,8 +41,8 @@ export interface MedusaProductPayload {
   options: Array<{ title: string; values: string[] }>
   variants: MedusaVariantPayload[]
   metadata: Record<string, unknown>
-  /** Resolved category IDs injected by import.ts before the API call. */
-  category_ids?: string[]
+  /** Resolved category associations injected by import.ts before the API call. */
+  categories?: Array<{ id: string }>
 }
 
 // ── Core transform ────────────────────────────────────────────────────────────
@@ -67,9 +67,12 @@ export function transformRows(rows: ExcelCatalogRow[]): MedusaProductPayload[] {
     const first = variantRows[0]!
     const hasShades = variantRows.some((v) => !!v.shade_name)
 
+    // Medusa requires every product to carry at least one option with a value
+    // per variant. Shade-less products (e.g. a single-SKU sunscreen) get a
+    // synthetic "Default" option so the create/update payload stays valid.
     const options: MedusaProductPayload['options'] = hasShades
       ? [{ title: 'Shade', values: variantRows.map((v) => v.shade_name ?? 'Default') }]
-      : []
+      : [{ title: 'Default', values: ['Default'] }]
 
     const variants: MedusaVariantPayload[] = variantRows.map((v) => {
       const priceInPaise = Math.round(v.price * 100)
@@ -87,7 +90,9 @@ export function transformRows(rows: ExcelCatalogRow[]): MedusaProductPayload[] {
         manage_inventory: true,
         allow_backorder: false,
         prices: [price],
-        options: hasShades ? { Shade: v.shade_name ?? 'Default' } : ({} as Record<string, string>),
+        options: (hasShades
+          ? { Shade: v.shade_name ?? 'Default' }
+          : { Default: 'Default' }) as Record<string, string>,
         metadata: {
           shade_hex: v.shade_hex ?? null,
           media_filename: v.main_image,

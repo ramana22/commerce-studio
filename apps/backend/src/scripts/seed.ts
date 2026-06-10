@@ -166,6 +166,10 @@ export default async function seed({
       input: [
         {
           country_code: COUNTRY,
+          // Bind the region to the system tax provider. Without this the
+          // provider_id is null and cart tax-line calculation (add-to-cart →
+          // upsert-tax-lines) fails with "Could not resolve 'null'".
+          provider_id: 'tp_system',
           default_tax_rate: {
             name: `GST ${GST_RATE}%`,
             code: 'gst',
@@ -370,7 +374,13 @@ export default async function seed({
   const productService = container.resolve<IProductModuleService>(
     Modules.PRODUCT,
   )
-  const existingCategories = await productService.listProductCategories()
+  // `handle` must be selected explicitly — module-service list methods return
+  // only `id` by default, which would make every category look new and break
+  // idempotency (createProductCategories then throws on the duplicate handle).
+  const existingCategories = await productService.listProductCategories(
+    {},
+    { select: ['handle'], take: 1000 },
+  )
   const existingHandles = new Set(existingCategories.map((c) => c.handle))
 
   let categoriesCreated = 0
@@ -397,6 +407,8 @@ export default async function seed({
   logger.info(`  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${publishableKey.token}`)
   logger.info('━'.repeat(64))
   logger.info('Next steps:')
-  logger.info('  1. pnpm dlx medusa user -e admin@sugar-store.com -p <password>')
+  logger.info('  1. Create an admin user whose credentials match MEDUSA_ADMIN_EMAIL')
+  logger.info('     + MEDUSA_ADMIN_PASSWORD in .env, e.g.:')
+  logger.info('     pnpm dlx medusa user -e admin@sugarcosmetics.com -p <password>')
   logger.info('  2. pnpm catalog:import')
 }
