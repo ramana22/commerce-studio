@@ -5,12 +5,12 @@
  *
  *   Phase 4 (catalog)        Phase 5 (money path)
  *   ─────────────────        ────────────────────
- *   - Store (INR)            - Sales channel + publishable API key
- *   - India region (INR)     - Stock location
+ *   - Store (USD)            - Sales channel + publishable API key
+ *   - US region (USD)        - Stock location
  *   - Product categories     - Manual fulfillment + manual payment providers
  *                            - Shipping profile, fulfillment set, service zone
- *                            - Standard + Express shipping options (INR)
- *                            - Tax region (India)
+ *                            - Standard + Express shipping options (USD)
+ *                            - Tax region (US sales tax)
  *
  * Run after the DB has been migrated (`pnpm --filter @sugar-store/backend dev`):
  *   pnpm backend:seed
@@ -53,35 +53,37 @@ import {
 
 // Sugar's product categories — lower-kebab-case handles for Medusa
 const SUGAR_CATEGORIES = [
-  { name: 'Lips',      handle: 'lips'      },
-  { name: 'Eyes',      handle: 'eyes'      },
-  { name: 'Face',      handle: 'face'      },
-  { name: 'Nails',     handle: 'nails'     },
-  { name: 'Skin',      handle: 'skin'      },
-  { name: 'Gifting',   handle: 'gifting'   },
-  { name: 'Sugar Pop', handle: 'sugar-pop' },
-  { name: '249 Store', handle: '249-store' },
-  { name: 'Kits',      handle: 'kits'      },
+  { name: 'Lips',        handle: 'lips'        },
+  { name: 'Eyes',        handle: 'eyes'        },
+  { name: 'Face',        handle: 'face'        },
+  { name: 'Nails',       handle: 'nails'       },
+  { name: 'Skin',        handle: 'skin'        },
+  { name: 'Gifting',     handle: 'gifting'     },
+  { name: 'Sugar Pop',   handle: 'sugar-pop'   },
+  { name: 'Value Store', handle: 'value-store' },
+  { name: 'Kits',        handle: 'kits'        },
 ] as const
 
 const SALES_CHANNEL_NAME = 'Sugar Online Store'
-const STOCK_LOCATION_NAME = 'Sugar Warehouse — Mumbai'
+const STOCK_LOCATION_NAME = 'Sugar Warehouse — New Jersey'
 const API_KEY_TITLE = 'Sugar Storefront'
-const COUNTRY = 'in'
-const CURRENCY = 'inr'
+const COUNTRY = 'us'
+const CURRENCY = 'usd'
 
 // Manual providers ship with Medusa core and require no external config.
 const MANUAL_FULFILLMENT_PROVIDER = 'manual_manual'
 const MANUAL_PAYMENT_PROVIDER = 'pp_system_default'
 
-// Razorpay is registered (and added to the region) only when configured.
-const RAZORPAY_ENABLED = Boolean(
-  process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET,
+// Square is registered (and added to the region) only when configured.
+const SQUARE_ENABLED = Boolean(
+  process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID,
 )
-const RAZORPAY_PAYMENT_PROVIDER = 'pp_razorpay_razorpay'
+const SQUARE_PAYMENT_PROVIDER = 'pp_square_square'
 
-// GST on cosmetics in India is 18%. Prices are stored tax-inclusive (MRP style).
-const GST_RATE = 18
+// US sales tax is destination-based and varies by state; this single default
+// rate is a placeholder — configure per-state nexus in production. Prices are
+// stored tax-exclusive (the US convention: tax is added on top at checkout).
+const SALES_TAX_RATE = 7.25
 
 export default async function seed({
   container,
@@ -110,7 +112,7 @@ export default async function seed({
     logger.info(`  ─  Sales channel "${SALES_CHANNEL_NAME}" already exists`)
   }
 
-  // ── 2. Store: INR currency + default sales channel ──────────────────────
+  // ── 2. Store: USD currency + default sales channel ──────────────────────
   const storeService = container.resolve<IStoreModuleService>(Modules.STORE)
   const [store] = await storeService.listStores()
   if (store) {
@@ -124,22 +126,22 @@ export default async function seed({
         },
       },
     })
-    logger.info('  ✓  Store configured (INR, default sales channel)')
+    logger.info('  ✓  Store configured (USD, default sales channel)')
   }
 
-  // ── 3. Region: India (INR) with the manual payment provider ─────────────
+  // ── 3. Region: United States (USD) with the manual payment provider ─────
   const regionService = container.resolve<IRegionModuleService>(Modules.REGION)
   const paymentProviders = [
     MANUAL_PAYMENT_PROVIDER,
-    ...(RAZORPAY_ENABLED ? [RAZORPAY_PAYMENT_PROVIDER] : []),
+    ...(SQUARE_ENABLED ? [SQUARE_PAYMENT_PROVIDER] : []),
   ]
-  let [region] = await regionService.listRegions({ name: 'India' })
+  let [region] = await regionService.listRegions({ name: 'United States' })
   if (!region) {
     const { result } = await createRegionsWorkflow(container).run({
       input: {
         regions: [
           {
-            name: 'India',
+            name: 'United States',
             currency_code: CURRENCY,
             countries: [COUNTRY],
             payment_providers: paymentProviders,
@@ -149,18 +151,18 @@ export default async function seed({
     })
     region = result[0]!
     logger.info(
-      `  ✓  Region "India" (INR) created — payment: ${paymentProviders.join(', ')}`,
+      `  ✓  Region "United States" (USD) created — payment: ${paymentProviders.join(', ')}`,
     )
   } else {
-    logger.info('  ─  Region "India" already exists')
-    if (RAZORPAY_ENABLED) {
+    logger.info('  ─  Region "United States" already exists')
+    if (SQUARE_ENABLED) {
       logger.info(
-        '     (Razorpay enabled — add it to the region in Admin if not already present)',
+        '     (Square enabled — add it to the region in Admin if not already present)',
       )
     }
   }
 
-  // ── 4. Tax region (GST) + tax-inclusive INR pricing ──────────────────────
+  // ── 4. Tax region (US sales tax) + tax-exclusive USD pricing ─────────────
   try {
     await createTaxRegionsWorkflow(container).run({
       input: [
@@ -171,19 +173,19 @@ export default async function seed({
           // upsert-tax-lines) fails with "Could not resolve 'null'".
           provider_id: 'tp_system',
           default_tax_rate: {
-            name: `GST ${GST_RATE}%`,
-            code: 'gst',
-            rate: GST_RATE,
+            name: `Sales Tax ${SALES_TAX_RATE}%`,
+            code: 'sales',
+            rate: SALES_TAX_RATE,
           },
         },
       ],
     })
-    logger.info(`  ✓  Tax region (India, GST ${GST_RATE}%) created`)
+    logger.info(`  ✓  Tax region (US, sales tax ${SALES_TAX_RATE}%) created`)
   } catch {
-    logger.info('  ─  Tax region (India) already exists')
+    logger.info('  ─  Tax region (US) already exists')
   }
 
-  // INR prices are entered tax-inclusive (Indian MRP convention).
+  // US prices are entered tax-exclusive — sales tax is added on top at checkout.
   const pricingService = container.resolve(Modules.PRICING)
   const existingPrefs = await pricingService.listPricePreferences({
     attribute: 'currency_code',
@@ -192,12 +194,12 @@ export default async function seed({
   if (existingPrefs.length === 0) {
     await createPricePreferencesWorkflow(container).run({
       input: [
-        { attribute: 'currency_code', value: CURRENCY, is_tax_inclusive: true },
+        { attribute: 'currency_code', value: CURRENCY, is_tax_inclusive: false },
       ],
     })
-    logger.info('  ✓  INR pricing set to tax-inclusive')
+    logger.info('  ✓  USD pricing set to tax-exclusive')
   } else {
-    logger.info('  ─  INR price preference already exists')
+    logger.info('  ─  USD price preference already exists')
   }
 
   // ── 5. Stock location ────────────────────────────────────────────────────
@@ -214,11 +216,11 @@ export default async function seed({
           {
             name: STOCK_LOCATION_NAME,
             address: {
-              city: 'Mumbai',
+              city: 'Edison',
               country_code: COUNTRY,
-              address_1: 'Andheri East',
-              province: 'Maharashtra',
-              postal_code: '400069',
+              address_1: '100 Distribution Way',
+              province: 'NJ',
+              postal_code: '08817',
             },
           },
         ],
@@ -267,7 +269,7 @@ export default async function seed({
     logger.info('  ─  Default shipping profile already exists')
   }
 
-  // Fulfillment set with a service zone covering India
+  // Fulfillment set with a service zone covering the United States
   let [fulfillmentSet] = await fulfillmentService.listFulfillmentSets(
     { name: 'Sugar Delivery' },
     { relations: ['service_zones'] },
@@ -278,12 +280,12 @@ export default async function seed({
       type: 'shipping',
       service_zones: [
         {
-          name: 'India',
+          name: 'United States',
           geo_zones: [{ country_code: COUNTRY, type: 'country' }],
         },
       ],
     })
-    logger.info('  ✓  Fulfillment set + India service zone created')
+    logger.info('  ✓  Fulfillment set + US service zone created')
   } else {
     logger.info('  ─  Fulfillment set "Sugar Delivery" already exists')
   }
@@ -300,7 +302,7 @@ export default async function seed({
       service_zone: { id: serviceZone.id },
     })
     if (existingOptions.length === 0) {
-      // Prices are in paise (INR × 100) to match the catalog price convention.
+      // Prices are in cents (USD × 100) to match the catalog price convention.
       await createShippingOptionsWorkflow(container).run({
         input: [
           {
@@ -314,7 +316,7 @@ export default async function seed({
               description: 'Delivered in 3–5 business days',
               code: 'standard',
             },
-            prices: [{ currency_code: CURRENCY, amount: 4900 }],
+            prices: [{ currency_code: CURRENCY, amount: 599 }],
             rules: [
               { attribute: 'enabled_in_store', value: 'true', operator: 'eq' },
               { attribute: 'is_return', value: 'false', operator: 'eq' },
@@ -331,7 +333,7 @@ export default async function seed({
               description: 'Delivered in 1–2 business days',
               code: 'express',
             },
-            prices: [{ currency_code: CURRENCY, amount: 9900 }],
+            prices: [{ currency_code: CURRENCY, amount: 1499 }],
             rules: [
               { attribute: 'enabled_in_store', value: 'true', operator: 'eq' },
               { attribute: 'is_return', value: 'false', operator: 'eq' },
@@ -339,7 +341,7 @@ export default async function seed({
           },
         ],
       })
-      logger.info('  ✓  Standard (₹49) + Express (₹99) shipping options created')
+      logger.info('  ✓  Standard ($5.99) + Express ($14.99) shipping options created')
     } else {
       logger.info('  ─  Shipping options already exist')
     }

@@ -26,7 +26,7 @@ Set these in the Vercel project (Production + Preview):
 | `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | From `pnpm backend:seed` |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` | Sanity content |
 | `NEXT_PUBLIC_MEDIA_BASE_URL` | R2 public media domain |
-| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Enables Razorpay Checkout |
+| `NEXT_PUBLIC_SQUARE_APPLICATION_ID`, `NEXT_PUBLIC_SQUARE_LOCATION_ID` | Enables the Square card form |
 | `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN` | Error monitoring |
 
 ## Image hosts
@@ -44,4 +44,4 @@ host parsed from `NEXT_PUBLIC_MEDIA_BASE_URL`. Add any additional CDN domains th
 2. Generate the redirect map from the real Shopify export
    (`data/shopify-redirects.csv` → `pnpm redirects:build`) and redeploy.
 3. Point the apex/`www` DNS at Vercel.
-4. Watch Sentry and the Razorpay dashboard for the first live orders.
+4. Watch Sentry and the Square dashboard for the first live orders.

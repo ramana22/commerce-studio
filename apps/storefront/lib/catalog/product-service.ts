@@ -24,7 +24,7 @@ const PRODUCT_FIELDS = [
 
 let cachedRegionId: string | null = null
 
-/** Resolve (and memoize) the INR region id for price calculation. */
+/** Resolve (and memoize) the US region id for price calculation. */
 async function regionId(): Promise<string | null> {
   if (cachedRegionId) return cachedRegionId
   try {

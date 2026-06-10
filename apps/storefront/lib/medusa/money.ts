@@ -1,28 +1,29 @@
 /**
  * Money helpers.
  *
- * The catalog is imported with prices in paise (INR × 100), so every monetary
+ * The catalog is imported with prices in cents (USD × 100), so every monetary
  * value returned by Medusa — line totals, cart totals, order totals — is in
- * paise. The storefront converts to full INR for display.
+ * cents. The storefront converts to full dollars for display.
  */
 
-const inrFormatter = new Intl.NumberFormat('en-IN', {
+const usdFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
-  currency: 'INR',
-  maximumFractionDigits: 0,
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 })
 
-/** Convert a paise amount from Medusa into full INR. */
-export function paiseToInr(paise: number | null | undefined): number {
-  return Math.round(paise ?? 0) / 100
+/** Convert a cents amount from Medusa into full dollars. */
+export function centsToUsd(cents: number | null | undefined): number {
+  return Math.round(cents ?? 0) / 100
 }
 
-/** Format a paise amount as a localized INR string, e.g. "₹1,299". */
-export function formatPaise(paise: number | null | undefined): string {
-  return inrFormatter.format(paiseToInr(paise))
+/** Format a cents amount as a localized USD string, e.g. "$12.99". */
+export function formatCents(cents: number | null | undefined): string {
+  return usdFormatter.format(centsToUsd(cents))
 }
 
-/** Format a value already expressed in full INR, e.g. "₹1,299". */
-export function formatInr(inr: number): string {
-  return inrFormatter.format(inr)
+/** Format a value already expressed in full dollars, e.g. "$12.99". */
+export function formatUsd(usd: number): string {
+  return usdFormatter.format(usd)
 }

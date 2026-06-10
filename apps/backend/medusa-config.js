@@ -18,21 +18,27 @@ if (process.env.SENTRY_DSN) {
   }
 }
 
-// Register the Razorpay payment provider only when credentials are present, so
+// Register the Square payment provider only when credentials are present, so
 // the backend still boots (with the manual provider) in local/dev setups.
 const modules = []
-if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+if (
+  process.env.SQUARE_ACCESS_TOKEN &&
+  process.env.SQUARE_APPLICATION_ID &&
+  process.env.SQUARE_LOCATION_ID
+) {
   modules.push({
     resolve: '@medusajs/medusa/payment',
     options: {
       providers: [
         {
-          resolve: './src/modules/razorpay',
-          id: 'razorpay',
+          resolve: './src/modules/square',
+          id: 'square',
           options: {
-            keyId: process.env.RAZORPAY_KEY_ID,
-            keySecret: process.env.RAZORPAY_KEY_SECRET,
-            webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
+            accessToken: process.env.SQUARE_ACCESS_TOKEN,
+            applicationId: process.env.SQUARE_APPLICATION_ID,
+            locationId: process.env.SQUARE_LOCATION_ID,
+            environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',
+            webhookSignatureKey: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY,
           },
         },
       ],

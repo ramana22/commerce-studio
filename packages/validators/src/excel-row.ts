@@ -34,9 +34,9 @@ export const ExcelCatalogRowSchema = z
       .number({ invalid_type_error: 'Price must be a number' })
       .positive('Price must be positive'),
 
-    mrp: z
-      .number({ invalid_type_error: 'MRP must be a number' })
-      .positive('MRP must be positive'),
+    msrp: z
+      .number({ invalid_type_error: 'MSRP must be a number' })
+      .positive('MSRP must be positive'),
 
     stock: z
       .number({ invalid_type_error: 'Stock must be a number' })
@@ -58,9 +58,9 @@ export const ExcelCatalogRowSchema = z
     // Semicolon-separated filenames  e.g. "img-a.jpg;img-b.jpg"
     gallery_images: z.string().optional(),
   })
-  .refine((d) => d.mrp >= d.price, {
-    message: 'MRP must be ≥ selling price',
-    path: ['mrp'],
+  .refine((d) => d.msrp >= d.price, {
+    message: 'MSRP must be ≥ selling price',
+    path: ['msrp'],
   })
 
 export type ExcelCatalogRow = z.infer<typeof ExcelCatalogRowSchema>
@@ -71,7 +71,7 @@ export const REQUIRED_EXCEL_COLUMNS = [
   'category',
   'sku',
   'price',
-  'mrp',
+  'msrp',
   'stock',
   'main_image',
 ] as const

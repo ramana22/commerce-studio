@@ -18,13 +18,13 @@ export const ProductVariantSchema = z
       .regex(/^[0-9A-Fa-f]{6}$/, 'Must be a 6-character hex colour (no leading #)')
       .optional(),
     price: z.number().positive('Price must be positive'),
-    mrp: z.number().positive('MRP must be positive'),
+    msrp: z.number().positive('MSRP must be positive'),
     stock: z.number().int().min(0, 'Stock cannot be negative'),
     media_filename: z.string().optional(),
   })
-  .refine((d) => d.mrp >= d.price, {
-    message: 'MRP must be ≥ selling price',
-    path: ['mrp'],
+  .refine((d) => d.msrp >= d.price, {
+    message: 'MSRP must be ≥ selling price',
+    path: ['msrp'],
   })
 export type ProductVariant = z.infer<typeof ProductVariantSchema>
 

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { formatInr } from '@/lib/medusa/money'
+import { formatUsd } from '@/lib/medusa/money'
 import { AppImage } from '@/components/ui/app-image'
 import { useCart } from './cart-context'
 
@@ -136,7 +136,7 @@ export function CartDrawer() {
                               </button>
                             </div>
                             <span className="text-sm font-semibold tabular-nums">
-                              {formatInr(line.total_inr)}
+                              {formatUsd(line.total_usd)}
                             </span>
                           </div>
                         </div>
@@ -158,7 +158,7 @@ export function CartDrawer() {
                   <div className="mb-3 flex justify-between font-semibold">
                     <span>Subtotal</span>
                     <span className="tabular-nums">
-                      {formatInr(totals?.subtotal_inr ?? 0)}
+                      {formatUsd(totals?.subtotal_usd ?? 0)}
                     </span>
                   </div>
                   <p className="mb-3 text-xs text-neutral-400">

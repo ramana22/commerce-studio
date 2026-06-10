@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import type { ProductDetail } from '@/lib/catalog/types'
 import { useCart } from '@/components/cart/cart-context'
-import { formatInr } from '@/lib/medusa/money'
+import { formatUsd } from '@/lib/medusa/money'
 import { cn } from '@/lib/utils/cn'
 
 export function PdpActions({ product }: { product: ProductDetail }) {
@@ -17,8 +17,8 @@ export function PdpActions({ product }: { product: ProductDetail }) {
     product.variants.find((v) => v.id === variantId) ?? firstAvailable
   const hasShades = product.variants.some((v) => v.shade_name)
   const discount =
-    selected?.mrp_inr && selected.mrp_inr > selected.price_inr
-      ? Math.round((1 - selected.price_inr / selected.mrp_inr) * 100)
+    selected?.msrp_usd && selected.msrp_usd > selected.price_usd
+      ? Math.round((1 - selected.price_usd / selected.msrp_usd) * 100)
       : null
 
   return (
@@ -26,12 +26,12 @@ export function PdpActions({ product }: { product: ProductDetail }) {
       {/* Price */}
       <div className="flex items-baseline gap-3">
         <span className="text-2xl font-bold">
-          {formatInr(selected?.price_inr ?? product.price_inr)}
+          {formatUsd(selected?.price_usd ?? product.price_usd)}
         </span>
-        {selected?.mrp_inr && selected.mrp_inr > selected.price_inr ? (
+        {selected?.msrp_usd && selected.msrp_usd > selected.price_usd ? (
           <>
             <span className="text-lg text-neutral-400 line-through">
-              {formatInr(selected.mrp_inr)}
+              {formatUsd(selected.msrp_usd)}
             </span>
             {discount ? (
               <span className="text-sm font-semibold text-green-700">

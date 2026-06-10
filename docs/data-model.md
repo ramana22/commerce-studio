@@ -60,11 +60,11 @@ backed by the resources created in `apps/backend/src/scripts/seed.ts`.
 | Publishable API key | Authorizes Store API requests from the storefront |
 | Stock location + manual fulfillment provider | Allows fulfillment of orders |
 | Shipping profile + fulfillment set + service zone | Where/how items ship |
-| Shipping options (Standard ₹49, Express ₹99) | Customer delivery choices |
+| Shipping options (Standard $5.99, Express $14.99) | Customer delivery choices |
 | Manual payment provider (`pp_system_default`) | Completes checkout without a gateway |
-| Tax region (India) | Tax calculation |
+| Tax region (US sales tax, tax-exclusive) | Tax calculation |
 
-Real payments (Razorpay) and GST replace the manual provider in Phase 9.
+Real payments (Square) replace the manual provider in Phase 9.
 
 ### Storefront flow
 
@@ -81,7 +81,7 @@ checkout ─▶ cart.update (email + addresses)
 
 - **Cart id** is held in an httpOnly cookie; reads happen in server components
   (`lib/cart/cart-service.ts`), mutations in server actions (`lib/cart/actions.ts`).
-- **Prices** are stored in paise (INR × 100) on import, so every Medusa amount
+- **Prices** are stored in cents (USD × 100) on import, so every Medusa amount
   is divided by 100 for display (`lib/medusa/money.ts`).
 - **Validation** of checkout input reuses `@sugar-store/validators/checkout`.
 

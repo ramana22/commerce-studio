@@ -50,16 +50,16 @@ Set everything from `../.env.example`. Production essentials:
 | `DATABASE_URL`, `REDIS_URL` | Connection strings |
 | `JWT_SECRET`, `COOKIE_SECRET` | Long random values (`openssl rand -hex 32`) |
 | `STORE_CORS`, `ADMIN_CORS`, `AUTH_CORS` | Production origins |
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Enables the Razorpay provider |
-| `RAZORPAY_WEBHOOK_SECRET` | If webhooks are enabled |
+| `SQUARE_ACCESS_TOKEN`, `SQUARE_APPLICATION_ID`, `SQUARE_LOCATION_ID` | Enables the Square provider |
+| `SQUARE_WEBHOOK_SIGNATURE_KEY` | If webhooks are enabled |
 | `SENTRY_DSN` | Backend error monitoring |
 
-## Razorpay webhook (optional but recommended)
+## Square webhook (optional but recommended)
 
-Create a webhook in the Razorpay dashboard pointing to:
+Create a webhook in the Square dashboard pointing to:
 
 ```
-https://<api-domain>/hooks/payment/razorpay_razorpay
+https://<api-domain>/hooks/payment/square_square
 ```
 
 Subscribe to `payment.captured`, `payment.authorized`, `payment.failed` and set

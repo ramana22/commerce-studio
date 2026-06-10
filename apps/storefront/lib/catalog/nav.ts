@@ -16,7 +16,7 @@ export const NAV_CATEGORIES: NavCategory[] = [
   { slug: 'skin', handle: 'skin', label: 'Skin' },
   { slug: 'gifting', handle: 'gifting', label: 'Gifting' },
   { slug: 'sugar-pop', handle: 'sugar-pop', label: 'Sugar Pop' },
-  { slug: '249-store', handle: '249-store', label: '₹249 Store' },
+  { slug: 'value-store', handle: 'value-store', label: 'Value Store' },
   { slug: 'kits', handle: 'kits', label: 'Kits' },
 ]
 

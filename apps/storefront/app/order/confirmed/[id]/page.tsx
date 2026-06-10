@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getOrder } from '@/lib/order/order-service'
-import { formatInr } from '@/lib/medusa/money'
+import { formatUsd } from '@/lib/medusa/money'
 import { CartClearer } from '@/components/cart/cart-clearer'
 
 export const metadata: Metadata = { title: 'Order confirmed' }
@@ -41,7 +41,7 @@ export default async function OrderConfirmedPage({
         </div>
         <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold">
           <dt>Total paid</dt>
-          <dd className="tabular-nums">{formatInr(order.total_inr)}</dd>
+          <dd className="tabular-nums">{formatUsd(order.total_usd)}</dd>
         </div>
       </dl>
 

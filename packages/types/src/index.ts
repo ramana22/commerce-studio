@@ -41,10 +41,10 @@ export interface ProductCard {
   badge: string | null
   is_new_launch: boolean
   is_bestseller: boolean
-  /** Selling price in full INR (not paise). */
-  price_inr: number
-  /** Original MRP in full INR, or null when no discount applies. */
-  mrp_inr: number | null
+  /** Selling price in full USD (not cents). */
+  price_usd: number
+  /** Original MSRP in full USD, or null when no discount applies. */
+  msrp_usd: number | null
   shades: SugarShade[]
 }
 
@@ -58,21 +58,21 @@ export interface CartLine {
   shade_name: string | null
   shade_hex: string | null
   quantity: number
-  /** Selling price per unit in full INR. */
-  unit_price_inr: number
-  /** Line total in full INR. */
-  total_inr: number
+  /** Selling price per unit in full USD. */
+  unit_price_usd: number
+  /** Line total in full USD. */
+  total_usd: number
 }
 
-/** Aggregated cart money lines — all values in full INR. */
+/** Aggregated cart money lines — all values in full USD. */
 export interface CartTotals {
-  subtotal_inr: number
+  subtotal_usd: number
   /** Selected shipping method cost; 0 before a method is chosen. */
-  shipping_inr: number
-  tax_inr: number
+  shipping_usd: number
+  tax_usd: number
   /** Total discount applied across promotions; 0 when none. */
-  discount_inr: number
-  total_inr: number
+  discount_usd: number
+  total_usd: number
   /** Sum of line quantities. */
   item_count: number
 }
@@ -83,8 +83,8 @@ export interface OrderSummary {
   display_id: number
   status: string
   created_at: string
-  /** Order grand total in full INR. */
-  total_inr: number
+  /** Order grand total in full USD. */
+  total_usd: number
   item_count: number
   email: string
 }

@@ -56,19 +56,20 @@ pnpm redirects:build   # → apps/storefront/redirects.generated.json
 Structural redirects (`/collections/:slug` → `/:slug`, `/pages/:slug` → `/:slug`)
 are always emitted; explicit CSV rows take precedence.
 
-## Payments — Razorpay (Phase 9)
+## Payments — Square (Phase 9)
 
-Razorpay activates automatically once `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET`
-(backend) and `NEXT_PUBLIC_RAZORPAY_KEY_ID` (storefront) are set, and the region
-includes the provider (re-run `pnpm backend:seed` on a fresh DB, or add it in Admin).
+Square activates automatically once `SQUARE_ACCESS_TOKEN` + `SQUARE_APPLICATION_ID`
++ `SQUARE_LOCATION_ID` (backend) and `NEXT_PUBLIC_SQUARE_APPLICATION_ID` +
+`NEXT_PUBLIC_SQUARE_LOCATION_ID` (storefront) are set, and the region includes the
+provider (re-run `pnpm backend:seed` on a fresh DB, or add it in Admin).
 
 ```
-Checkout → startRazorpayPayment (creates Razorpay order)
-        → Razorpay Checkout modal (test card: 4111 1111 1111 1111)
-        → finalizeOrder → cart.complete → provider verifies capture → Order
+Checkout → Square Web Payments card form (sandbox test card: 4111 1111 1111 1111)
+        → tokenize card → placeSquareOrder (opens session carrying the token)
+        → cart.complete → provider creates the Square payment → Order
 ```
 
-Without Razorpay keys the storefront falls back to the manual test provider.
+Without Square keys the storefront falls back to the manual test provider.
 
 ## Monitoring (Phase 9)
 
@@ -90,4 +91,4 @@ Without Razorpay keys the storefront falls back to the manual test provider.
 3. Storefront env vars set; checkout verified on a preview URL.
 4. `data/shopify-redirects.csv` in place; `pnpm redirects:build` run.
 5. Sentry receiving events; backups scheduled.
-6. Point DNS at Vercel; monitor first live orders in the Razorpay dashboard.
+6. Point DNS at Vercel; monitor first live orders in the Square dashboard.

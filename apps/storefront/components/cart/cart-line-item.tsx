@@ -1,7 +1,7 @@
 'use client'
 
 import type { CartLine } from '@sugar-store/types'
-import { formatInr } from '@/lib/medusa/money'
+import { formatUsd } from '@/lib/medusa/money'
 import { AppImage } from '@/components/ui/app-image'
 import { useCart } from './cart-context'
 
@@ -38,7 +38,7 @@ export function CartLineItem({ line }: { line: CartLine }) {
           </p>
         ) : null}
         <p className="mt-1 text-sm text-neutral-500">
-          {formatInr(line.unit_price_inr)} each
+          {formatUsd(line.unit_price_usd)} each
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export function CartLineItem({ line }: { line: CartLine }) {
 
       {/* Line total + remove */}
       <div className="w-24 text-right">
-        <p className="font-medium tabular-nums">{formatInr(line.total_inr)}</p>
+        <p className="font-medium tabular-nums">{formatUsd(line.total_usd)}</p>
         <button
           type="button"
           disabled={isPending}

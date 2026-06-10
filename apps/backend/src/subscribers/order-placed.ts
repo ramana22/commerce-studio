@@ -84,7 +84,7 @@ async function sendConfirmationEmail(order: PlacedOrder, logger: Log): Promise<v
   const subject = `Your Sugar order #${order.display_id} is confirmed`
   const body =
     `Hi,\n\nThanks for shopping with Sugar Cosmetics — we've received your order.\n\n` +
-    `${itemLines}\n\nTotal: ₹${total}\n\nWe'll email you again when it ships.\n\n— Sugar Cosmetics`
+    `${itemLines}\n\nTotal: $${total}\n\nWe'll email you again when it ships.\n\n— Sugar Cosmetics`
 
   const apiKey = process.env.SENDGRID_API_KEY
   const from = process.env.EMAIL_FROM

@@ -1,16 +1,15 @@
 /** Medusa payment provider ids (format: pp_{identifier}_{id}). */
 export const MANUAL_PROVIDER_ID = 'pp_system_default'
-export const RAZORPAY_PROVIDER_ID = 'pp_razorpay_razorpay'
+export const SQUARE_PROVIDER_ID = 'pp_square_square'
 
-/** Public Razorpay key — present only when Razorpay is configured. */
-export const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? ''
+/** Public Square Web Payments config — present only when Square is configured. */
+export const SQUARE_APPLICATION_ID =
+  process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID ?? ''
+export const SQUARE_LOCATION_ID = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID ?? ''
+export const SQUARE_ENVIRONMENT: 'sandbox' | 'production' =
+  process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT === 'production'
+    ? 'production'
+    : 'sandbox'
 
-/** Whether the storefront should drive the Razorpay checkout flow. */
-export const isRazorpayEnabled = Boolean(RAZORPAY_KEY_ID)
-
-/** Data the provider exposes to the storefront to open Razorpay Checkout. */
-export interface RazorpaySessionData {
-  razorpay_order_id: string
-  key_id: string
-  amount: number
-}
+/** Whether the storefront should drive the Square card flow. */
+export const isSquareEnabled = Boolean(SQUARE_APPLICATION_ID && SQUARE_LOCATION_ID)

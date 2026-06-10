@@ -54,7 +54,7 @@ function preprocessRow(raw: Record<string, unknown>): Record<string, unknown> {
   const toNum = (v: unknown): unknown => {
     if (typeof v === 'number') return v
     if (typeof v === 'string' && v.trim() !== '') {
-      const n = Number(v.replace(/[₹,\s]/g, ''))
+      const n = Number(v.replace(/[$,\s]/g, ''))
       return isNaN(n) ? v : n
     }
     return v
@@ -68,7 +68,7 @@ function preprocessRow(raw: Record<string, unknown>): Record<string, unknown> {
   return {
     ...raw,
     price: toNum(raw['price']),
-    mrp: toNum(raw['mrp']),
+    msrp: toNum(raw['msrp']),
     stock: toNum(raw['stock']),
     review_count:
       raw['review_count'] != null && raw['review_count'] !== ''
