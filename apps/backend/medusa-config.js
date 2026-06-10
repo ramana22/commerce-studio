@@ -20,7 +20,10 @@ if (process.env.SENTRY_DSN) {
 
 // Register the Square payment provider only when credentials are present, so
 // the backend still boots (with the manual provider) in local/dev setups.
-const modules = []
+const modules = [
+  // Reviews — product reviews owned in their own module (Phase 11).
+  { resolve: './src/modules/review' },
+]
 if (
   process.env.SQUARE_ACCESS_TOKEN &&
   process.env.SQUARE_APPLICATION_ID &&
