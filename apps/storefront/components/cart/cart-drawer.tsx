@@ -1,0 +1,189 @@
+'use client'
+
+import { useEffect } from 'react'
+import Link from 'next/link'
+import { AnimatePresence, motion } from 'motion/react'
+import { formatInr } from '@/lib/medusa/money'
+import { AppImage } from '@/components/ui/app-image'
+import { useCart } from './cart-context'
+
+export function CartDrawer() {
+  const { cart, isOpen, closeCart, updateItem, removeItem, isPending } =
+    useCart()
+
+  // Lock body scroll and close on Escape while the drawer is open.
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeCart()
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [isOpen, closeCart])
+
+  const lines = cart?.lines ?? []
+  const totals = cart?.totals
+
+  return (
+    <AnimatePresence>
+      {isOpen ? (
+        <>
+          <motion.div
+            className="fixed inset-0 z-40 bg-black/40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={closeCart}
+            aria-hidden
+          />
+          <motion.aside
+            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-xl"
+            role="dialog"
+            aria-label="Shopping bag"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+          >
+            <header className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
+              <h2 className="font-display text-lg font-bold">
+                Your bag{totals ? ` (${totals.item_count})` : ''}
+              </h2>
+              <button
+                type="button"
+                onClick={closeCart}
+                aria-label="Close bag"
+                className="text-2xl leading-none text-neutral-500 hover:text-brand-ink"
+              >
+                ×
+              </button>
+            </header>
+
+            {lines.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+                <p className="text-neutral-500">Your bag is empty.</p>
+                <button
+                  type="button"
+                  onClick={closeCart}
+                  className="rounded-full bg-pink-600 px-6 py-3 font-medium text-white"
+                >
+                  Continue shopping
+                </button>
+              </div>
+            ) : (
+              <>
+                <ul className="flex-1 overflow-y-auto px-5">
+                  <AnimatePresence initial={false}>
+                    {lines.map((line) => (
+                      <motion.li
+                        key={line.id}
+                        layout
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="flex gap-3 border-b border-neutral-100 py-4"
+                      >
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                          {line.thumbnail ? (
+                            <AppImage
+                              src={line.thumbnail}
+                              alt={line.title}
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                            />
+                          ) : null}
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <p className="truncate text-sm font-medium">
+                            {line.title}
+                          </p>
+                          {line.shade_name ? (
+                            <p className="text-xs text-neutral-500">
+                              {line.shade_name}
+                            </p>
+                          ) : null}
+                          <div className="mt-auto flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                aria-label="Decrease quantity"
+                                disabled={isPending}
+                                onClick={() =>
+                                  updateItem(line.id, line.quantity - 1)
+                                }
+                                className="h-7 w-7 rounded border border-neutral-300 disabled:opacity-50"
+                              >
+                                −
+                              </button>
+                              <span className="w-5 text-center text-sm tabular-nums">
+                                {line.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                aria-label="Increase quantity"
+                                disabled={isPending}
+                                onClick={() =>
+                                  updateItem(line.id, line.quantity + 1)
+                                }
+                                className="h-7 w-7 rounded border border-neutral-300 disabled:opacity-50"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <span className="text-sm font-semibold tabular-nums">
+                              {formatInr(line.total_inr)}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          aria-label="Remove item"
+                          disabled={isPending}
+                          onClick={() => removeItem(line.id)}
+                          className="self-start text-neutral-300 hover:text-brand-ink"
+                        >
+                          ×
+                        </button>
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </ul>
+
+                <footer className="border-t border-neutral-200 px-5 py-4">
+                  <div className="mb-3 flex justify-between font-semibold">
+                    <span>Subtotal</span>
+                    <span className="tabular-nums">
+                      {formatInr(totals?.subtotal_inr ?? 0)}
+                    </span>
+                  </div>
+                  <p className="mb-3 text-xs text-neutral-400">
+                    Shipping &amp; taxes calculated at checkout
+                  </p>
+                  <Link
+                    href="/checkout"
+                    onClick={closeCart}
+                    className="block rounded-full bg-pink-600 px-6 py-3.5 text-center font-medium text-white transition hover:bg-pink-700"
+                  >
+                    Checkout
+                  </Link>
+                  <Link
+                    href="/cart"
+                    onClick={closeCart}
+                    className="mt-2 block text-center text-sm text-neutral-500 underline"
+                  >
+                    View full bag
+                  </Link>
+                </footer>
+              </>
+            )}
+          </motion.aside>
+        </>
+      ) : null}
+    </AnimatePresence>
+  )
+}

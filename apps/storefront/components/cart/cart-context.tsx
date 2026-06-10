@@ -16,6 +16,10 @@ interface CartContextValue {
   itemCount: number
   /** True while a cart mutation is in flight. */
   isPending: boolean
+  /** Whether the cart drawer is open. */
+  isOpen: boolean
+  openCart: () => void
+  closeCart: () => void
   addItem: (variantId: string, quantity?: number) => void
   updateItem: (lineId: string, quantity: number) => void
   removeItem: (lineId: string) => void
@@ -33,9 +37,15 @@ export function CartProvider({
   children: ReactNode
 }) {
   const [cart, setCart] = useState<CartView | null>(initialCart)
+  const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
+  const openCart = useCallback(() => setIsOpen(true), [])
+  const closeCart = useCallback(() => setIsOpen(false), [])
+
   const addItem = useCallback((variantId: string, quantity = 1) => {
+    // Open the drawer immediately for responsive feedback, then sync.
+    setIsOpen(true)
     startTransition(async () => {
       setCart(await addToCart(variantId, quantity))
     })
@@ -63,6 +73,9 @@ export function CartProvider({
         cart,
         itemCount,
         isPending,
+        isOpen,
+        openCart,
+        closeCart,
         addItem,
         updateItem,
         removeItem,

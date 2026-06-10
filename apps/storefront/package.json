@@ -16,10 +16,13 @@
     "@sanity/image-url": "^1.1.0",
     "@sugar-store/types": "workspace:*",
     "@sugar-store/validators": "workspace:*",
+    "clsx": "^2.1.0",
+    "motion": "^11.15.0",
     "next": "^15.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
+    "tailwind-merge": "^2.5.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

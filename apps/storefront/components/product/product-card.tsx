@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import type { ProductCard as ProductCardData } from '@sugar-store/types'
 import { formatInr } from '@/lib/medusa/money'
+import { AppImage } from '@/components/ui/app-image'
 import { ShadeSwatches } from './shade-swatches'
+
+const CARD_SIZES = '(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw'
 
 function Badge({ product }: { product: ProductCardData }) {
   const label = product.is_new_launch
@@ -11,7 +14,7 @@ function Badge({ product }: { product: ProductCardData }) {
       : product.badge
   if (!label) return null
   return (
-    <span className="absolute left-2 top-2 rounded bg-black/80 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white">
+    <span className="absolute left-2.5 top-2.5 z-10 rounded-full bg-brand-ink/85 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-white backdrop-blur">
       {label}
     </span>
   )
@@ -26,21 +29,36 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   return (
     <Link
       href={`/products/${product.handle}`}
-      className="group flex flex-col overflow-hidden rounded-lg border border-neutral-200 transition-shadow hover:shadow-md"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-hover"
     >
-      <div className="relative aspect-square overflow-hidden bg-neutral-100">
+      <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
         <Badge product={product} />
         {product.thumbnail ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <AppImage
             src={product.thumbnail}
             alt={product.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes={CARD_SIZES}
+            className="object-cover"
+          />
+        ) : null}
+        {/* Hover image cross-fade */}
+        {product.hover_image ? (
+          <AppImage
+            src={product.hover_image}
+            alt=""
+            aria-hidden
+            fill
+            sizes={CARD_SIZES}
+            className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
           />
         ) : null}
       </div>
+
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <p className="line-clamp-2 text-sm font-medium">{product.title}</p>
+        <p className="line-clamp-2 text-sm font-medium leading-snug">
+          {product.title}
+        </p>
         <ShadeSwatches shades={product.shades} />
         <div className="mt-auto flex items-baseline gap-2 pt-1">
           <span className="font-semibold">{formatInr(product.price_inr)}</span>
@@ -50,7 +68,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
                 {formatInr(product.mrp_inr)}
               </span>
               {discount ? (
-                <span className="text-xs font-medium text-green-700">
+                <span className="text-xs font-semibold text-green-700">
                   {discount}% off
                 </span>
               ) : null}

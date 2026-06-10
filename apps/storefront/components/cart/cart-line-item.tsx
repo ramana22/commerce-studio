@@ -2,6 +2,7 @@
 
 import type { CartLine } from '@sugar-store/types'
 import { formatInr } from '@/lib/medusa/money'
+import { AppImage } from '@/components/ui/app-image'
 import { useCart } from './cart-context'
 
 export function CartLineItem({ line }: { line: CartLine }) {
@@ -10,13 +11,14 @@ export function CartLineItem({ line }: { line: CartLine }) {
   return (
     <li className="flex items-center gap-4 border-b border-neutral-200 py-4">
       {/* Thumbnail */}
-      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded bg-neutral-100">
+      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
         {line.thumbnail ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <AppImage
             src={line.thumbnail}
             alt={line.title}
-            className="h-full w-full object-cover"
+            fill
+            sizes="80px"
+            className="object-cover"
           />
         ) : null}
       </div>
