@@ -1,0 +1,69 @@
+# Production stack for the Medusa backend (Postgres + Redis + Medusa + Caddy).
+# Storefront deploys separately to Vercel.
+#
+#   docker compose -f infra/docker-compose.prod.yml up -d --build
+#
+# Requires a .env file at the repo root (see .env.example).
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sugar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sugar}
+      POSTGRES_DB: ${POSTGRES_DB:-sugar_store}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-sugar}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.backend
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-sugar}:${POSTGRES_PASSWORD:-sugar}@postgres:5432/${POSTGRES_DB:-sugar_store}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - '9000'
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  caddy_data:
+  caddy_config:

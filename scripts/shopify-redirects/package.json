@@ -1,0 +1,20 @@
+{
+  "name": "@sugar-store/shopify-redirects",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "create-sample": "tsx create-sample.ts",
+    "build-map": "tsx build-map.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "@sugar-store/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}

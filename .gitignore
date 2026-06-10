@@ -81,6 +81,9 @@ out
 # Sanity Studio build + runtime cache
 .sanity
 
+# Generated Shopify→storefront redirect map (built by `pnpm redirects:build`)
+apps/storefront/redirects.generated.json
+
 # Nuxt.js build / generate output
 .nuxt
 dist
@@ -138,6 +141,7 @@ dist
 # Project data (sensitive / large — never commit)
 data/master-catalog.xlsx
 data/shopify-export/
+data/shopify-redirects.csv
 data/media-raw/*
 !data/media-raw/.gitkeep
 data/media-processed/*

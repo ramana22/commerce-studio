@@ -15,7 +15,9 @@
     "backend:seed": "pnpm --filter @sugar-store/backend seed",
     "media:test-images": "pnpm --filter @sugar-store/media-pipeline create-test-images",
     "media:process": "pnpm --filter @sugar-store/media-pipeline process",
-    "media:pipeline": "pnpm --filter @sugar-store/media-pipeline pipeline"
+    "media:pipeline": "pnpm --filter @sugar-store/media-pipeline pipeline",
+    "redirects:sample": "pnpm --filter @sugar-store/shopify-redirects create-sample",
+    "redirects:build": "pnpm --filter @sugar-store/shopify-redirects build-map"
   },
   "pnpm": {
     "overrides": {
