@@ -118,6 +118,28 @@ export async function getProductsByHandles(
   }
 }
 
+/** Full-text search product cards by title/description (header search). */
+export async function searchProductCards(
+  query: string,
+  limit = 8,
+): Promise<ProductCard[]> {
+  const q = query.trim()
+  if (q.length < 2) return []
+  const region_id = await regionId()
+  if (!region_id) return []
+  try {
+    const { products } = await sdk.store.product.list({
+      q,
+      region_id,
+      fields: PRODUCT_FIELDS,
+      limit,
+    })
+    return products.map(mapProductToCard)
+  } catch {
+    return []
+  }
+}
+
 interface ListOptions {
   limit?: number
   bestsellersOnly?: boolean
