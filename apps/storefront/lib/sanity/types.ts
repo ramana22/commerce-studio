@@ -91,8 +91,68 @@ export interface OfferBannerBlock {
   backgroundImage?: SanityImage
 }
 
+export interface HeroSlide {
+  eyebrow?: string
+  title: string
+  highlight?: string
+  subtitle?: string
+  ctaLabel?: string
+  ctaHref?: string
+  bgColor?: string
+  accentColor?: string
+  liquidColor?: string
+}
+
+export interface HeroCarouselBlock {
+  _type: 'heroCarousel'
+  _key: string
+  slides: HeroSlide[]
+}
+
+export interface ValuePropsBlock {
+  _type: 'valueProps'
+  _key: string
+  items: { title: string; body?: string; icon?: string }[]
+}
+
+export interface MarqueeBlock {
+  _type: 'marqueeStrip'
+  _key: string
+  items: string[]
+}
+
+export interface BrandStoryBlock {
+  _type: 'brandStory'
+  _key: string
+  eyebrow?: string
+  heading: string
+  highlight?: string
+  body?: string
+  artWord?: string
+  stats?: { value: string; label: string }[]
+  ctaLabel?: string
+  ctaHref?: string
+}
+
+export interface NewsletterBlock {
+  _type: 'newsletter'
+  _key: string
+  eyebrow?: string
+  heading: string
+  highlight?: string
+  subtitle?: string
+  placeholder?: string
+  buttonLabel?: string
+  successText?: string
+}
+
 export type HomepageBlock =
   | HeroVideoBlock
+  | HeroCarouselBlock
+  | ValuePropsBlock
+  | MarqueeBlock
+  | BrandStoryBlock
+  | NewsletterBlock
   | CategoryTilesBlock
   | ProductCarouselBlock
   | ReelCarouselBlock

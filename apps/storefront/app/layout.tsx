@@ -7,15 +7,18 @@ import { getAnnouncementBar } from '@/lib/sanity/queries'
 import { CartProvider } from '@/components/cart/cart-context'
 import { CartDrawer } from '@/components/cart/cart-drawer'
 import { SiteHeader } from '@/components/layout/site-header'
+import { SiteFooter } from '@/components/layout/site-footer'
 import { AnnouncementBar } from '@/components/layout/announcement-bar'
+import { PromoBar } from '@/components/layout/promo-bar'
 import { cn } from '@/lib/utils/cn'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Sugar Cosmetics',
-    template: '%s | Sugar Cosmetics',
+    default: 'BodyScent — Pure Perfume Oils',
+    template: '%s | BodyScent',
   },
-  description: 'Premium beauty products — lipsticks, eyeshadows, foundations and more.',
+  description:
+    'Skin-safe, alcohol-free perfume oils inspired by the icons. Long-lasting roll-on fragrances from $8.',
 }
 
 export default async function RootLayout({
@@ -30,12 +33,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={cn(fontSans.variable, fontDisplay.variable)}>
-      <body className="font-sans">
+      <body className="flex min-h-screen flex-col font-sans">
         <MotionConfig reducedMotion="user">
           <CartProvider initialCart={cart}>
-            {announcement ? <AnnouncementBar data={announcement} /> : null}
+            {announcement ? <AnnouncementBar data={announcement} /> : <PromoBar />}
             <SiteHeader />
-            {children}
+            <div className="flex-1">{children}</div>
+            <SiteFooter />
             <CartDrawer />
           </CartProvider>
         </MotionConfig>

@@ -2,6 +2,7 @@
 
 import type { CartLine } from '@sugar-store/types'
 import { formatUsd } from '@/lib/medusa/money'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { AppImage } from '@/components/ui/app-image'
 import { useCart } from './cart-context'
 
@@ -15,6 +16,7 @@ export function CartLineItem({ line }: { line: CartLine }) {
         {line.thumbnail ? (
           <AppImage
             src={line.thumbnail}
+            fallbackSrc={bottleImage(line.product_id || line.id)}
             alt={line.title}
             fill
             sizes="80px"

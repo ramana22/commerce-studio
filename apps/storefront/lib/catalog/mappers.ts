@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types'
 import type { ProductCard, SugarShade } from '@sugar-store/types'
 import { centsToUsd } from '../medusa/money'
 import { mediaUrl } from '../media/url'
+import { displayImage } from './placeholder'
 import type { ProductDetail, ProductDetailVariant } from './types'
 
 type Variant = HttpTypes.StoreProductVariant
@@ -78,7 +79,10 @@ export function mapProductToCard(product: Product): ProductCard {
     id: product.id,
     handle: product.handle ?? '',
     title: product.title,
-    thumbnail: product.thumbnail ?? images[0] ?? null,
+    thumbnail: displayImage(
+      product.thumbnail ?? images[0],
+      product.handle ?? product.id,
+    ),
     hover_image: mediaUrl(str(m.hover_image)),
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
@@ -109,13 +113,21 @@ export function mapProductToDetail(product: Product): ProductDetail {
   })
   const first = variants[0]
 
+  const seed = product.handle ?? product.id
+  // Swap placeholder gallery images for a demo perfume photo (keeping real media
+  // untouched), and guarantee at least one image. The bottle SVG remains the
+  // load-error fallback via AppImage's `fallbackSrc`.
+  const gallery = (images.length ? images : [null]).map((i) =>
+    displayImage(i, seed),
+  )
+
   return {
     id: product.id,
     handle: product.handle ?? '',
     title: product.title,
     description: product.description ?? null,
-    thumbnail: product.thumbnail ?? images[0] ?? null,
-    images,
+    thumbnail: displayImage(product.thumbnail ?? images[0], seed),
+    images: gallery,
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
     is_bestseller: m.is_bestseller === true,
