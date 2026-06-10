@@ -85,6 +85,39 @@ checkout ─▶ cart.update (email + addresses)
   is divided by 100 for display (`lib/medusa/money.ts`).
 - **Validation** of checkout input reuses `@sugar-store/validators/checkout`.
 
+## Storefront Rendering (Phase 7)
+
+The storefront composes each page from two sources: **Sanity** for editorial
+content/layout and **Medusa** for live commerce data.
+
+```
+Homepage      Sanity homepage.blocks ─▶ BlockRenderer
+                 productCarousel ─┬─ manual      ─▶ Medusa by handle
+                                  ├─ category    ─▶ Medusa by category
+                                  └─ bestsellers/new ─▶ Medusa + metadata filter
+
+Category /[slug]   slug == Medusa handle
+                   Sanity categoryBanner (hero)  +  Medusa products (grid)
+
+Product /products/[handle]   Medusa product ─▶ ProductDetail (shades, gallery, price)
+
+Announcement bar   Sanity announcementBar (rotating, client-side)
+```
+
+Key modules:
+
+- `lib/sanity/` — CDN client, GROQ queries, typed results, image URL builder.
+  `sanityFetch` returns `null` (and the UI degrades) when Sanity is unconfigured.
+- `lib/catalog/` — Medusa product service + mappers (`ProductCard`, `ProductDetail`),
+  and `nav.ts` (the slug ⇄ handle ⇄ label map).
+- `lib/media/url.ts` — prefixes catalog image paths with the public media base.
+- Sanity links products by **handle**; the storefront resolves live price/stock
+  at request time, so content and commerce stay decoupled.
+
+Pages render dynamically (the layout reads the cart cookie); Sanity reads are
+ISR-revalidated (60s). Image optimization with `next/image` and motion land in
+Phase 8.
+
 ## Shared Types (`packages/types`)
 
 TypeScript types are inferred from Zod schemas in `packages/validators` — one
