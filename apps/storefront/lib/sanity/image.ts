@@ -1,8 +1,13 @@
 import imageUrlBuilder from '@sanity/image-url'
-import { sanityClient } from './client'
+import { SANITY_DATASET, SANITY_PROJECT_ID } from './config'
 import type { SanityImage } from './types'
 
-const builder = imageUrlBuilder(sanityClient)
+// Built from a plain config (not the full client) so client components can
+// resolve image URLs without bundling @sanity/client.
+const builder = imageUrlBuilder({
+  projectId: SANITY_PROJECT_ID || 'placeholder',
+  dataset: SANITY_DATASET,
+})
 
 /**
  * Build a CDN URL for a Sanity image, or `null` when the image (or its asset)
