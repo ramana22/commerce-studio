@@ -38,6 +38,8 @@ const config: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.sanity.io' },
       { protocol: 'https', hostname: 'media.sugarcosmetics.com' },
+      // Placeholder host for the demo products seeded in apps/backend.
+      { protocol: 'https', hostname: 'picsum.photos' },
       ...mediaPattern(),
     ],
   },
