@@ -8,9 +8,12 @@
  *   - Store (USD)            - Sales channel + publishable API key
  *   - US region (USD)        - Stock location
  *   - Product categories     - Manual fulfillment + manual payment providers
- *                            - Shipping profile, fulfillment set, service zone
+ *   - Demo products          - Shipping profile, fulfillment set, service zone
  *                            - Standard + Express shipping options (USD)
  *                            - Tax region (US sales tax)
+ *
+ * The demo products give a freshly seeded store a populated storefront out of
+ * the box. Replace/extend them with your real catalog via `pnpm catalog:import`.
  *
  * Run after the DB has been migrated (`pnpm --filter @sugar-store/backend dev`):
  *   pnpm backend:seed
@@ -40,6 +43,7 @@ import type {
 import {
   createApiKeysWorkflow,
   createPricePreferencesWorkflow,
+  createProductsWorkflow,
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
   createShippingOptionsWorkflow,
@@ -63,6 +67,181 @@ const SUGAR_CATEGORIES = [
   { name: 'Value Store', handle: 'value-store' },
   { name: 'Kits',        handle: 'kits'        },
 ] as const
+
+// ── Demo catalog ──────────────────────────────────────────────────────────────
+// A small, presentable product set so a freshly seeded store renders a populated
+// storefront immediately (instead of "No products found"). For a real catalog,
+// leave these in place and layer your products on top via `pnpm catalog:import`
+// — the importer upserts by handle and won't clash with these demo handles.
+//
+// Prices are tax-exclusive cents (USD × 100). Variants set manage_inventory:false
+// so demo products are always purchasable without an inventory-level setup.
+// Thumbnails use picsum.photos (seeded per handle) so the grid renders without
+// the R2 media pipeline configured; swap these for real R2/Sanity images later.
+interface DemoVariant {
+  title: string
+  sku: string
+  /** Selling price in cents (USD × 100). */
+  price: number
+  /** Optional swatch colour shown on shade-based products. */
+  hex?: string
+}
+
+interface DemoProduct {
+  title: string
+  handle: string
+  description: string
+  /** Category handle from SUGAR_CATEGORIES. */
+  category: string
+  /** Variant option label — 'Shade' for colour cosmetics, 'Default' otherwise. */
+  optionLabel: 'Shade' | 'Default'
+  variants: DemoVariant[]
+  is_bestseller?: boolean
+  is_new_launch?: boolean
+  badge?: string
+  review_count?: number
+}
+
+const DEMO_PRODUCTS: DemoProduct[] = [
+  {
+    title: 'Matte Attack Transferproof Lipstick',
+    handle: 'matte-attack-lipstick',
+    description:
+      'A weightless, transferproof matte lipstick with intense colour payoff that lasts all day.',
+    category: 'lips',
+    optionLabel: 'Shade',
+    is_bestseller: true,
+    review_count: 1284,
+    variants: [
+      { title: 'Brick Flick', sku: 'LIP-MATT-01', price: 1499, hex: '#A0382E' },
+      { title: 'Mauve-rick', sku: 'LIP-MATT-02', price: 1499, hex: '#9B6A6C' },
+      { title: 'Nude-tella', sku: 'LIP-MATT-03', price: 1499, hex: '#C68B7B' },
+    ],
+  },
+  {
+    title: 'Smudge Me Not Liquid Lipstick',
+    handle: 'smudge-me-not-liquid-lipstick',
+    description:
+      'A high-impact liquid lipstick that dries to a comfortable matte finish and never bleeds.',
+    category: 'lips',
+    optionLabel: 'Shade',
+    is_new_launch: true,
+    review_count: 642,
+    variants: [
+      { title: 'Stay-Pent', sku: 'LIP-SMNG-01', price: 1299, hex: '#7B2D26' },
+      { title: 'Plum Yum', sku: 'LIP-SMNG-02', price: 1299, hex: '#6E3551' },
+    ],
+  },
+  {
+    title: 'Eye Warned Intense Kohl Eyeliner',
+    handle: 'eye-warned-eyeliner',
+    description:
+      'A deeply pigmented, smudge-proof kohl that glides on for a crisp, all-day line.',
+    category: 'eyes',
+    optionLabel: 'Shade',
+    badge: 'Vegan',
+    review_count: 903,
+    variants: [
+      { title: 'Pitch Black', sku: 'EYE-KOHL-01', price: 999, hex: '#0B0B0B' },
+    ],
+  },
+  {
+    title: 'Arch Arrival Microblade Brow Pencil',
+    handle: 'arch-arrival-brow-pencil',
+    description:
+      'An ultra-fine brow pencil that draws hair-like strokes for naturally defined brows.',
+    category: 'eyes',
+    optionLabel: 'Shade',
+    review_count: 418,
+    variants: [
+      { title: 'Soft Brown', sku: 'EYE-BROW-01', price: 899, hex: '#6B4A35' },
+      { title: 'Deep Espresso', sku: 'EYE-BROW-02', price: 899, hex: '#3B2A22' },
+    ],
+  },
+  {
+    title: 'Blush Of Life Powder Blush',
+    handle: 'blush-of-life-powder-blush',
+    description:
+      'A silky, buildable powder blush that melts into skin for a soft, natural flush.',
+    category: 'face',
+    optionLabel: 'Shade',
+    is_bestseller: true,
+    review_count: 756,
+    variants: [
+      { title: 'Rose Bae', sku: 'FAC-BLSH-01', price: 1199, hex: '#D17A7A' },
+      { title: 'Coral Crush', sku: 'FAC-BLSH-02', price: 1199, hex: '#E08A6A' },
+    ],
+  },
+  {
+    title: 'Base Of Spades Liquid Foundation',
+    handle: 'base-of-spades-foundation',
+    description:
+      'A medium-to-full coverage foundation with a natural matte finish and 24-hour wear.',
+    category: 'face',
+    optionLabel: 'Shade',
+    is_new_launch: true,
+    review_count: 531,
+    variants: [
+      { title: 'Fair Rose', sku: 'FAC-FND-01', price: 1999, hex: '#F1D2BE' },
+      { title: 'Light Sand', sku: 'FAC-FND-02', price: 1999, hex: '#E3B89A' },
+      { title: 'Medium Honey', sku: 'FAC-FND-03', price: 1999, hex: '#C89368' },
+      { title: 'Deep Cocoa', sku: 'FAC-FND-04', price: 1999, hex: '#7A4B30' },
+    ],
+  },
+  {
+    title: 'Set The Tone Loose Setting Powder',
+    handle: 'set-the-tone-loose-powder',
+    description:
+      'A finely milled translucent powder that blurs pores and locks makeup in place.',
+    category: 'face',
+    optionLabel: 'Default',
+    review_count: 289,
+    variants: [
+      { title: 'Translucent', sku: 'FAC-PWD-01', price: 1399, hex: '#EDE3D8' },
+    ],
+  },
+  {
+    title: 'Nailed It Gel Nail Lacquer',
+    handle: 'nailed-it-nail-lacquer',
+    description:
+      'A high-shine, chip-resistant gel-effect lacquer that dries fast for a salon finish.',
+    category: 'nails',
+    optionLabel: 'Shade',
+    review_count: 374,
+    variants: [
+      { title: 'Red Carpet', sku: 'NAI-LAQ-01', price: 599, hex: '#B11226' },
+      { title: 'Mint Condition', sku: 'NAI-LAQ-02', price: 599, hex: '#9FD8C0' },
+      { title: 'Lilac Lane', sku: 'NAI-LAQ-03', price: 599, hex: '#B7A2D6' },
+    ],
+  },
+  {
+    title: 'Dew Drop Daily Moisturizer',
+    handle: 'dew-drop-moisturizer',
+    description:
+      'A lightweight, fast-absorbing moisturizer with hyaluronic acid and SPF 30 protection.',
+    category: 'skin',
+    optionLabel: 'Default',
+    is_bestseller: true,
+    badge: 'SPF 30',
+    review_count: 1102,
+    variants: [
+      { title: 'Default', sku: 'SKN-MST-01', price: 1699 },
+    ],
+  },
+  {
+    title: 'Clean Slate Gentle Face Wash',
+    handle: 'clean-slate-face-wash',
+    description:
+      'A sulphate-free gel cleanser that lifts away makeup and impurities without stripping skin.',
+    category: 'skin',
+    optionLabel: 'Default',
+    is_new_launch: true,
+    review_count: 467,
+    variants: [
+      { title: 'Default', sku: 'SKN-CLN-01', price: 799 },
+    ],
+  },
+]
 
 const SALES_CHANNEL_NAME = 'Sugar Online Store'
 const STOCK_LOCATION_NAME = 'Sugar Warehouse — New Jersey'
@@ -402,6 +581,75 @@ export default async function seed({
       : '  ─  All product categories already exist',
   )
 
+  // ── 9. Demo products ──────────────────────────────────────────────────────
+  // Resolve category ids by handle so demo products land in the right category.
+  const allCategories = await productService.listProductCategories(
+    {},
+    { select: ['id', 'handle'], take: 1000 },
+  )
+  const categoryIdByHandle = new Map(
+    allCategories.map((c) => [c.handle, c.id]),
+  )
+
+  // Skip any demo product whose handle already exists (idempotent re-runs).
+  const existingProducts = await productService.listProducts(
+    { handle: DEMO_PRODUCTS.map((p) => p.handle) },
+    { select: ['handle'], take: 1000 },
+  )
+  const existingProductHandles = new Set(existingProducts.map((p) => p.handle))
+  const productsToCreate = DEMO_PRODUCTS.filter(
+    (p) => !existingProductHandles.has(p.handle),
+  )
+
+  if (productsToCreate.length > 0) {
+    await createProductsWorkflow(container).run({
+      input: {
+        products: productsToCreate.map((p) => {
+          const categoryId = categoryIdByHandle.get(p.category)
+          return {
+            title: p.title,
+            handle: p.handle,
+            description: p.description,
+            status: 'published' as const,
+            // Seeded placeholder image so the grid renders without R2 media.
+            thumbnail: `https://picsum.photos/seed/${p.handle}/800/1000`,
+            images: [
+              { url: `https://picsum.photos/seed/${p.handle}/800/1000` },
+            ],
+            shipping_profile_id: shippingProfile.id,
+            sales_channels: [{ id: salesChannel.id }],
+            ...(categoryId ? { category_ids: [categoryId] } : {}),
+            options: [
+              {
+                title: p.optionLabel,
+                values: p.variants.map((v) => v.title),
+              },
+            ],
+            variants: p.variants.map((v) => ({
+              title: v.title,
+              sku: v.sku,
+              // No inventory levels are seeded, so don't gate on stock.
+              manage_inventory: false,
+              prices: [{ amount: v.price, currency_code: CURRENCY }],
+              options: { [p.optionLabel]: v.title },
+              ...(v.hex ? { metadata: { shade_hex: v.hex } } : {}),
+            })),
+            metadata: {
+              category: p.category,
+              ...(p.is_bestseller ? { is_bestseller: true } : {}),
+              ...(p.is_new_launch ? { is_new_launch: true } : {}),
+              ...(p.badge ? { badge: p.badge } : {}),
+              ...(p.review_count ? { review_count: p.review_count } : {}),
+            },
+          }
+        }),
+      },
+    })
+    logger.info(`  ✓  ${productsToCreate.length} demo products created`)
+  } else {
+    logger.info('  ─  Demo products already exist')
+  }
+
   // ── Done ─────────────────────────────────────────────────────────────────
   logger.info('\nSeed complete!')
   logger.info('━'.repeat(64))
@@ -409,8 +657,11 @@ export default async function seed({
   logger.info(`  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${publishableKey.token}`)
   logger.info('━'.repeat(64))
   logger.info('Next steps:')
-  logger.info('  1. Create an admin user whose credentials match MEDUSA_ADMIN_EMAIL')
+  logger.info('  1. Paste the publishable key above into .env, then restart the storefront')
+  logger.info('     so it can read products (otherwise the grid shows "No products found").')
+  logger.info('  2. Create an admin user whose credentials match MEDUSA_ADMIN_EMAIL')
   logger.info('     + MEDUSA_ADMIN_PASSWORD in .env, e.g.:')
   logger.info('     pnpm dlx medusa user -e admin@sugarcosmetics.com -p <password>')
-  logger.info('  2. pnpm catalog:import')
+  logger.info('  3. (Optional) Replace the demo products with your real catalog:')
+  logger.info('     pnpm catalog:import')
 }
