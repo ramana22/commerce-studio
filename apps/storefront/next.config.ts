@@ -69,8 +69,10 @@ const config: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.sanity.io' },
       { protocol: 'https', hostname: 'media.sugarcosmetics.com' },
-      // Placeholder host for the demo products seeded in apps/backend.
+      // Demo placeholder photo hosts (real product imagery replaces these).
       { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'loremflickr.com' },
+      { protocol: 'https', hostname: '*.staticflickr.com' },
       ...mediaPattern(),
     ],
   },

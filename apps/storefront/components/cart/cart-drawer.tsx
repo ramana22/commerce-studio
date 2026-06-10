@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { formatUsd } from '@/lib/medusa/money'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { AppImage } from '@/components/ui/app-image'
 import { useCart } from './cart-context'
 
@@ -130,6 +131,7 @@ export function CartDrawer() {
                           {line.thumbnail ? (
                             <AppImage
                               src={line.thumbnail}
+                              fallbackSrc={bottleImage(line.product_id || line.id)}
                               alt={line.title}
                               fill
                               sizes="80px"

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { NAV_CATEGORIES } from '@/lib/catalog/nav'
 import { getProductsByCategory } from '@/lib/catalog/product-service'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { Reveal } from '@/components/motion/reveal'
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger'
 import { AppImage } from '@/components/ui/app-image'
@@ -42,6 +43,7 @@ export async function CategoryShowcase() {
                 {img ? (
                   <AppImage
                     src={img}
+                    fallbackSrc={bottleImage(c.handle)}
                     alt={c.label}
                     fill
                     sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 50vw"

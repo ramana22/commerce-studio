@@ -7,6 +7,7 @@ import type { ProductCard } from '@sugar-store/types'
 import { searchAction } from '@/lib/catalog/search'
 import { formatUsd } from '@/lib/medusa/money'
 import { NAV_CATEGORIES } from '@/lib/catalog/nav'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { AppImage } from '@/components/ui/app-image'
 
 const SUGGESTIONS = ['Oud', 'Vanilla', 'Musk', 'For Him', 'Gift Set']
@@ -159,7 +160,7 @@ export function SearchOverlay({
                           >
                             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
                               {p.thumbnail ? (
-                                <AppImage src={p.thumbnail} alt={p.title} fill sizes="56px" className="object-cover" />
+                                <AppImage src={p.thumbnail} fallbackSrc={bottleImage(p.handle)} alt={p.title} fill sizes="56px" className="object-cover" />
                               ) : null}
                             </div>
                             <span className="min-w-0 flex-1 truncate text-sm font-medium text-brand-ink">

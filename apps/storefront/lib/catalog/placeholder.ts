@@ -53,10 +53,21 @@ export function isPlaceholder(url: string | null | undefined): boolean {
   return !url || url.includes('picsum.photos')
 }
 
-/** Real image when present, else a generated coloured bottle keyed by `seed`. */
+/**
+ * A real perfume photo for demo placeholders, keyed deterministically so each
+ * product keeps a stable image. loremflickr serves keyword-matched photos, so
+ * we never need to hand-pick (possibly stale) photo ids. If it ever fails to
+ * load, the UI falls back to `bottleImage` via `AppImage`'s `fallbackSrc`.
+ */
+export function photoUrl(seed: string): string {
+  const lock = (hash(seed) % 40) + 1
+  return `https://loremflickr.com/800/1000/perfume?lock=${lock}`
+}
+
+/** Real image when present, else a deterministic demo perfume photo. */
 export function displayImage(
   url: string | null | undefined,
   seed: string,
 ): string {
-  return isPlaceholder(url) ? bottleImage(seed) : (url as string)
+  return isPlaceholder(url) ? photoUrl(seed) : (url as string)
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { AppImage } from '@/components/ui/app-image'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { cn } from '@/lib/utils/cn'
 
 export function ProductGallery({
@@ -32,6 +33,7 @@ export function ProductGallery({
           >
             <AppImage
               src={images[active]!}
+              fallbackSrc={bottleImage(title)}
               alt={title}
               fill
               priority
@@ -57,6 +59,7 @@ export function ProductGallery({
               >
                 <AppImage
                   src={src}
+                  fallbackSrc={bottleImage(title)}
                   alt=""
                   fill
                   sizes="64px"

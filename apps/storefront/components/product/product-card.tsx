@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { ProductCard as ProductCardData } from '@sugar-store/types'
 import { formatUsd } from '@/lib/medusa/money'
 import { pseudoRating } from '@/lib/catalog/rating'
+import { bottleImage } from '@/lib/catalog/placeholder'
 import { AppImage } from '@/components/ui/app-image'
 import { Stars } from '@/components/ui/stars'
 import { ShadeSwatches } from './shade-swatches'
@@ -31,6 +32,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const fromPrice = product.shades.length > 1
   const { rating, count } = pseudoRating(product.id)
   const hover = product.hover_image ?? product.thumbnail
+  const fallback = bottleImage(product.handle || product.id)
 
   return (
     <Link
@@ -44,6 +46,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         {product.thumbnail ? (
           <AppImage
             src={product.thumbnail}
+            fallbackSrc={fallback}
             alt={product.title}
             fill
             sizes={CARD_SIZES}
@@ -54,6 +57,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         {hover ? (
           <AppImage
             src={hover}
+            fallbackSrc={fallback}
             alt=""
             aria-hidden
             fill
