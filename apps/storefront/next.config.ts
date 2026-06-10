@@ -1,16 +1,22 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { loadEnvConfig } from '@next/env'
+import dotenv from 'dotenv'
 import type { NextConfig } from 'next'
 
 // Next.js only auto-loads .env files from this app's own directory, but the
 // monorepo keeps a single source-of-truth .env at the repo root (the Medusa
-// backend loads it the same way). Load that root .env here so the storefront
-// picks up NEXT_PUBLIC_* values — most importantly the Medusa publishable key.
-// Without it, Store API requests go out with no x-publishable-api-key header,
-// Medusa answers 400, and every product list comes back empty ("No products
-// found"). Local app-level .env files still win, since loadEnvConfig does not
-// overwrite variables already present in process.env.
+// backend loads it the same way, via dotenv). Load that root .env here so the
+// storefront picks up NEXT_PUBLIC_* values — most importantly the Medusa
+// publishable key. Without it, Store API requests go out with no
+// x-publishable-api-key header, Medusa answers 400, and every product list
+// comes back empty ("No products found").
+//
+// dotenv is used here rather than @next/env's loadEnvConfig because Next.js
+// already calls loadEnvConfig for this app's directory before evaluating
+// next.config; @next/env caches that result and short-circuits any later call,
+// so it would never read the root .env. dotenv has no such cache and, by
+// default, does not override variables already present in process.env — so any
+// app-level .env still wins.
 function findRepoRoot(): string {
   let dir = process.cwd()
   while (path.dirname(dir) !== dir) {
@@ -19,7 +25,7 @@ function findRepoRoot(): string {
   }
   return process.cwd()
 }
-loadEnvConfig(findRepoRoot())
+dotenv.config({ path: path.join(findRepoRoot(), '.env') })
 
 interface Redirect {
   source: string
