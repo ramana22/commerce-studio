@@ -1,4 +1,5 @@
 const path = require('path')
+const { defineConfig } = require('@medusajs/framework/utils')
 
 // Load .env from the monorepo root (two levels up from apps/backend/)
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') })
@@ -39,8 +40,8 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
   })
 }
 
-/** @type {import('@medusajs/framework/config').ConfigModule} */
-module.exports = {
+/** @type {import('@medusajs/framework/types').ConfigModule} */
+module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
@@ -55,4 +56,4 @@ module.exports = {
     },
   },
   ...(modules.length > 0 ? { modules } : {}),
-}
+})
