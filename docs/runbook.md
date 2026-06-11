@@ -180,3 +180,28 @@ referenced by `product_id`. The table is created by its migration on
 To verify end-to-end: place an order for a product, submit a review with that
 order's email, approve it in `/app/reviews`, and confirm the stars + count update
 on the PDP and card.
+
+## Abandoned-cart recovery (Phase 12)
+
+Hourly job `apps/backend/src/jobs/abandoned-cart-recovery.ts` scans active
+(un-completed) carts that have an email and sends a staged sequence — **+1h**
+reminder, **+24h** with cart contents, **+48h** with an incentive code — via
+**Resend** (`RESEND_API_KEY`; falls back to SendGrid, then logs). The sent stage
+is stored in the cart's `metadata.recovery`, so each email sends once.
+
+- **Recovery link** — emails link to `/cart/recover?cart_id=…&token=…` on the
+  storefront, which restores the cart cookie and redirects to `/cart`. Set
+  `RECOVERY_SECRET` so the link is HMAC-signed (can't be enumerated).
+- **Suppression** — completed carts are excluded, so converting a cart stops all
+  further sends automatically.
+
+**Verify quickly:** lower the thresholds, e.g. `ABANDONED_STAGE1_MINUTES=1`,
+add an item to a cart while signed in (so the cart has an email), wait, then run
+the job on demand:
+
+```bash
+npx medusa exec ./src/jobs/abandoned-cart-recovery.ts
+```
+
+Watch for `[recovery] cart … → stage 1`, open the logged recovery URL to confirm
+the cart is restored, complete the order, and confirm no further stages send.
