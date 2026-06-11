@@ -69,6 +69,28 @@
   .hover-lift {
     @apply transition-all duration-500 ease-smooth hover:-translate-y-1.5 hover:shadow-hover;
   }
+
+  /* Huge outlined watermark words behind editorial sections. */
+  .text-stroke-ink {
+    -webkit-text-stroke: 1px rgba(26, 19, 16, 0.14);
+    color: transparent;
+  }
+  .text-stroke-white {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.22);
+    color: transparent;
+  }
+
+  /* Fade the horizontal edges of marquees / rails into the background. */
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      black 7%,
+      black 93%,
+      transparent
+    );
+    mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+  }
 }
 
 /* Respect the user's reduced-motion preference everywhere. */

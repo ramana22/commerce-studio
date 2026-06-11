@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "brand-art": "tsx brand-art.ts",
     "create-test-images": "tsx create-test-images.ts",
     "process": "tsx process-images.ts",
     "gif-to-mp4": "tsx gif-to-mp4.ts",

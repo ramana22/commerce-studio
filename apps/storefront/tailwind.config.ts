@@ -89,10 +89,29 @@ const config: Config = {
         'spin-slow': {
           '100%': { transform: 'rotate(360deg)' },
         },
+        // Slow organic drift for aura blobs behind bottles / mood art.
+        'aura-drift': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(26px, -18px) scale(1.12)' },
+          '66%': { transform: 'translate(-20px, 12px) scale(0.94)' },
+        },
+        // Mist particles rising through/around a bottle.
+        rise: {
+          '0%': { transform: 'translateY(40%)', opacity: '0' },
+          '20%': { opacity: '0.7' },
+          '80%': { opacity: '0.4' },
+          '100%': { transform: 'translateY(-120%)', opacity: '0' },
+        },
+        // Expanding sillage ring (softer than Tailwind's ping).
+        'ping-soft': {
+          '0%': { transform: 'scale(0.6)', opacity: '0.5' },
+          '100%': { transform: 'scale(1.6)', opacity: '0' },
+        },
       },
       animation: {
         marquee: 'marquee 28s linear infinite',
         'marquee-fast': 'marquee 16s linear infinite',
+        'marquee-slow': 'marquee 46s linear infinite',
         shimmer: 'shimmer 1.6s infinite',
         'fade-up': 'fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both',
         float: 'float 6s ease-in-out infinite',
@@ -100,6 +119,9 @@ const config: Config = {
         'gradient-x': 'gradient-x 9s ease infinite',
         glow: 'glow 5s ease-in-out infinite',
         'spin-slow': 'spin-slow 22s linear infinite',
+        aura: 'aura-drift 14s ease-in-out infinite',
+        rise: 'rise 7s linear infinite',
+        'ping-soft': 'ping-soft 2.6s cubic-bezier(0, 0, 0.2, 1) infinite',
       },
     },
   },

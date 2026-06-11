@@ -9,6 +9,7 @@ import { pseudoRating } from '@/lib/catalog/rating'
 import { getProductReviews } from '@/lib/reviews/review-service'
 import { ProductGallery } from '@/components/product/product-gallery'
 import { PdpActions } from '@/components/product/pdp-actions'
+import { ScentDna } from '@/components/product/scent-dna'
 import { ProductRail } from '@/components/home/product-rail'
 import { Stars } from '@/components/ui/stars'
 import { ReviewsSection } from '@/components/reviews/reviews-section'
@@ -24,21 +25,6 @@ export async function generateMetadata({
   return {
     title: product?.title ?? 'Product',
     description: product?.description ?? undefined,
-  }
-}
-
-/** Deterministic fragrance-note pyramid so each PDP reads like a real listing. */
-const TOP = ['Bergamot', 'Pink Pepper', 'Saffron', 'Grapefruit', 'Cardamom', 'Neroli']
-const HEART = ['Rose', 'Jasmine', 'Orris', 'Lavender', 'Geranium', 'Violet']
-const BASE = ['Oud', 'Amber', 'Sandalwood', 'Musk', 'Vanilla', 'Tobacco']
-
-function notesFor(id: string) {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  return {
-    top: [TOP[h % TOP.length], TOP[(h >> 3) % TOP.length]],
-    heart: [HEART[h % HEART.length], HEART[(h >> 3) % HEART.length]],
-    base: [BASE[h % BASE.length], BASE[(h >> 3) % BASE.length]],
   }
 }
 
@@ -91,7 +77,6 @@ export default async function ProductPage({
   const pseudo = pseudoRating(product.id)
   const rating = hasReviews ? reviewData.aggregate.average : pseudo.rating
   const count = hasReviews ? reviewData.aggregate.count : pseudo.count
-  const notes = notesFor(product.id)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -165,24 +150,8 @@ export default async function ProductPage({
 
             <PdpActions product={product} />
 
-            {/* Fragrance pyramid */}
-            <div className="mt-9 rounded-2xl bg-brand-cream p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-600">
-                Scent profile
-              </p>
-              <dl className="mt-3 space-y-2 text-sm">
-                {[
-                  ['Top', notes.top],
-                  ['Heart', notes.heart],
-                  ['Base', notes.base],
-                ].map(([label, items]) => (
-                  <div key={label as string} className="flex gap-3">
-                    <dt className="w-16 shrink-0 font-medium text-brand-ink">{label}</dt>
-                    <dd className="text-neutral-600">{(items as string[]).join(', ')}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+            {/* Animated note pyramid + wear meters */}
+            <ScentDna seed={product.handle || product.id} />
 
             {/* Accordions */}
             <div className="mt-6">

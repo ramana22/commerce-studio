@@ -5,12 +5,17 @@ import {
   getProductsByCategory,
 } from '@/lib/catalog/product-service'
 import { BlockRenderer } from '@/components/blocks/block-renderer'
-import { HeroCarousel } from '@/components/home/hero-carousel'
+import { SignatureHero } from '@/components/home/signature-hero'
 import { Marquee } from '@/components/home/marquee'
 import { ValueProps } from '@/components/home/value-props'
+import { MoodExplorer } from '@/components/home/mood-explorer'
+import { NotesJourney } from '@/components/home/notes-journey'
+import { CollectionBanner } from '@/components/home/collection-banner'
 import { CategoryShowcase } from '@/components/home/category-showcase'
 import { ProductRail } from '@/components/home/product-rail'
 import { BrandStory } from '@/components/home/brand-story'
+import { LifestyleReel } from '@/components/home/lifestyle-reel'
+import { Testimonials } from '@/components/home/testimonials'
 import { Newsletter } from '@/components/home/newsletter'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -44,10 +49,9 @@ export default async function HomePage() {
 
   return (
     <main>
-      <HeroCarousel />
+      <SignatureHero />
       <Marquee />
-      <ValueProps />
-      <CategoryShowcase />
+      <MoodExplorer />
       <ProductRail
         eyebrow="Most loved"
         title="Bestsellers"
@@ -59,6 +63,9 @@ export default async function HomePage() {
         title="Shop the Collection"
         products={featured}
       />
+      <NotesJourney />
+      <CollectionBanner />
+      <CategoryShowcase />
       <ProductRail
         eyebrow="For Her"
         title="Floral & Gourmand"
@@ -72,6 +79,9 @@ export default async function HomePage() {
         products={forHim}
         viewAllHref="/for-him"
       />
+      <LifestyleReel />
+      <Testimonials />
+      <ValueProps />
       <Newsletter />
     </main>
   )

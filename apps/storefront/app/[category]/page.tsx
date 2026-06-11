@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { findNavCategory } from '@/lib/catalog/nav'
 import { getProductsByCategory } from '@/lib/catalog/product-service'
 import { getCategoryBanner } from '@/lib/sanity/queries'
-import { ProductGrid } from '@/components/product/product-grid'
+import { FilteredProducts } from '@/components/plp/filtered-products'
 import { CategoryHero } from '@/components/category/category-hero'
 import { CategoryIntro } from '@/components/category/category-intro'
 
@@ -43,8 +43,8 @@ export default async function CategoryPage({
           accent={nav.accent}
         />
       )}
-      <div className="mx-auto max-w-7xl px-6 py-12">
-        <ProductGrid products={products} />
+      <div className="mx-auto max-w-7xl px-6 pb-16">
+        <FilteredProducts products={products} />
       </div>
     </main>
   )

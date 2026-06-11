@@ -45,6 +45,11 @@ export interface ProductCard {
   price_usd: number
   /** Original MSRP in full USD, or null when no discount applies. */
   msrp_usd: number | null
+  /**
+   * First in-stock variant id, used for one-tap quick add from cards.
+   * Optional so search hits / older payloads without it remain valid.
+   */
+  default_variant_id?: string | null
   shades: SugarShade[]
   /** Denormalised aggregate rating (0–5) from approved reviews, or null. */
   rating_average: number | null

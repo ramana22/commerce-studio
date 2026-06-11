@@ -2,7 +2,7 @@ import type { HttpTypes } from '@medusajs/types'
 import type { ProductCard, SugarShade } from '@sugar-store/types'
 import { centsToUsd } from '../medusa/money'
 import { mediaUrl } from '../media/url'
-import { displayImage } from './placeholder'
+import { displayImage, productGallery } from './placeholder'
 import type { ProductDetail, ProductDetailVariant } from './types'
 
 type Variant = HttpTypes.StoreProductVariant
@@ -89,6 +89,8 @@ export function mapProductToCard(product: Product): ProductCard {
     is_bestseller: m.is_bestseller === true,
     price_usd: prices.price_usd,
     msrp_usd: prices.msrp_usd,
+    default_variant_id:
+      (product.variants ?? []).find(variantInStock)?.id ?? first?.id ?? null,
     shades: (product.variants ?? []).map(toShade),
     rating_average: typeof m.rating_average === 'number' ? m.rating_average : null,
     rating_count: typeof m.rating_count === 'number' ? m.rating_count : null,
@@ -116,12 +118,12 @@ export function mapProductToDetail(product: Product): ProductDetail {
   const first = variants[0]
 
   const seed = product.handle ?? product.id
-  // Swap placeholder gallery images for a demo perfume photo (keeping real media
-  // untouched), and guarantee at least one image. The bottle SVG remains the
-  // load-error fallback via AppImage's `fallbackSrc`.
-  const gallery = (images.length ? images : [null]).map((i) =>
-    displayImage(i, seed),
-  )
+  // Real media is kept as-is (placeholder entries swapped per-index for render
+  // variety); products with no media get the three-shot brand gallery —
+  // studio, label macro, dark editorial — in the product's mood.
+  const gallery = images.length
+    ? images.map((img, idx) => displayImage(img, seed, idx))
+    : productGallery(seed)
 
   return {
     id: product.id,
