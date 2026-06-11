@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useCart } from '@/components/cart/cart-context'
 import { SearchOverlay } from '@/components/search/search-overlay'
 import { NAV_CATEGORIES } from '@/lib/catalog/nav'
+import { SCENT_MOODS, moodHref } from '@/lib/catalog/scent'
 import { cn } from '@/lib/utils/cn'
 
 function IconButton({
@@ -161,6 +162,28 @@ export function SiteHeader() {
                 >
                   Shop {active.label} →
                 </Link>
+              </div>
+
+              {/* Mood shortcuts — fragrance is shopped by feeling first. */}
+              <div className="ml-auto hidden max-w-xs border-l border-neutral-100 pl-8 lg:block">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400">
+                  Or shop by mood
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {SCENT_MOODS.map((m) => (
+                    <Link
+                      key={m.slug}
+                      href={moodHref(m.slug)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:border-pink-400 hover:text-pink-600"
+                    >
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: m.aura }}
+                      />
+                      {m.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>

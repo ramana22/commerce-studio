@@ -89,6 +89,8 @@ export function mapProductToCard(product: Product): ProductCard {
     is_bestseller: m.is_bestseller === true,
     price_usd: prices.price_usd,
     msrp_usd: prices.msrp_usd,
+    default_variant_id:
+      (product.variants ?? []).find(variantInStock)?.id ?? first?.id ?? null,
     shades: (product.variants ?? []).map(toShade),
     rating_average: typeof m.rating_average === 'number' ? m.rating_average : null,
     rating_count: typeof m.rating_count === 'number' ? m.rating_count : null,

@@ -3,10 +3,12 @@ import type { ProductCard as ProductCardData } from '@sugar-store/types'
 import { formatUsd } from '@/lib/medusa/money'
 import { pseudoRating } from '@/lib/catalog/rating'
 import { bottleImage } from '@/lib/catalog/placeholder'
+import { notesTeaser, scentProfile } from '@/lib/catalog/scent'
 import { AppImage } from '@/components/ui/app-image'
 import { Stars } from '@/components/ui/stars'
 import { ShadeSwatches } from './shade-swatches'
 import { WishlistButton } from './wishlist-button'
+import { QuickAddButton } from './quick-add-button'
 
 const CARD_SIZES = '(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw'
 
@@ -38,6 +40,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       : pseudoRating(product.id)
   const hover = product.hover_image ?? product.thumbnail
   const fallback = bottleImage(product.handle || product.id)
+  const profile = scentProfile(product.handle || product.id)
 
   return (
     <Link
@@ -71,11 +74,21 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           />
         ) : null}
 
-        {/* Reveal "View" pill on hover. */}
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 z-10 translate-y-3 opacity-0 transition-all duration-500 ease-smooth group-hover:translate-y-0 group-hover:opacity-100">
-          <span className="block rounded-full bg-brand-ink/90 py-2.5 text-center text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur">
-            View Product
-          </span>
+        {/* Mood chip — anchors the card in the scent-mood navigation. */}
+        <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-ink shadow-sm backdrop-blur">
+          <span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: profile.mood.aura }}
+          />
+          {profile.mood.label}
+        </span>
+
+        {/* Quick add — always reachable on touch, revealed on hover elsewhere. */}
+        <div className="pointer-events-none absolute bottom-3 right-3 z-10 translate-y-0 opacity-100 transition-all duration-500 ease-smooth sm:translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
+          <QuickAddButton
+            variantId={product.default_variant_id}
+            title={product.title}
+          />
         </div>
       </div>
 
@@ -86,6 +99,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </div>
         <p className="line-clamp-2 text-sm font-medium leading-snug text-brand-ink">
           {product.title}
+        </p>
+        <p className="truncate text-[11px] text-neutral-400">
+          {notesTeaser(profile)}
         </p>
         <ShadeSwatches shades={product.shades} />
         <div className="mt-auto flex items-baseline gap-2 pt-1.5">

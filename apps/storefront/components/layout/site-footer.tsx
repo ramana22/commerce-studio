@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { NAV_CATEGORIES } from '@/lib/catalog/nav'
+import { SCENT_MOODS, moodHref } from '@/lib/catalog/scent'
 
 const HELP_LINKS = [
   ['Track Order', '/'],
@@ -40,7 +41,7 @@ function Column({ title, links }: { title: string; links: [string, string][] }) 
 export function SiteFooter() {
   return (
     <footer className="bg-brand-ink text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-5">
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-6">
         <div className="md:col-span-2">
           <Link href="/" className="flex items-center gap-2">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-ember-sheen text-sm font-bold text-white">
@@ -69,6 +70,10 @@ export function SiteFooter() {
         </div>
 
         <Column title="Shop" links={NAV_CATEGORIES.map((c) => [c.label, `/${c.slug}`])} />
+        <Column
+          title="Moods"
+          links={SCENT_MOODS.map((m) => [m.label, moodHref(m.slug)])}
+        />
         <Column title="Help" links={HELP_LINKS as [string, string][]} />
         <Column title="About" links={ABOUT_LINKS as [string, string][]} />
       </div>
