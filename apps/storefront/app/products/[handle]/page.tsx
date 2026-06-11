@@ -6,10 +6,12 @@ import {
   getProductCards,
 } from '@/lib/catalog/product-service'
 import { pseudoRating } from '@/lib/catalog/rating'
+import { getProductReviews } from '@/lib/reviews/review-service'
 import { ProductGallery } from '@/components/product/product-gallery'
 import { PdpActions } from '@/components/product/pdp-actions'
 import { ProductRail } from '@/components/home/product-rail'
 import { Stars } from '@/components/ui/stars'
+import { ReviewsSection } from '@/components/reviews/reviews-section'
 import { TrackEvent } from '@/components/analytics/track-event'
 
 export async function generateMetadata({
@@ -69,20 +71,64 @@ export default async function ProductPage({
   const product = await getProductByHandle(handle)
   if (!product) notFound()
 
-  const related = (await getProductCards({ limit: 12 })).filter(
-    (p) => p.handle !== product.handle,
-  )
+  const [related, reviewData] = await Promise.all([
+    getProductCards({ limit: 12 }).then((cards) =>
+      cards.filter((p) => p.handle !== product.handle),
+    ),
+    getProductReviews(product.id),
+  ])
 
   const badge = product.is_new_launch
     ? 'NEW'
     : product.is_bestseller
       ? 'BESTSELLER'
       : product.badge
-  const { rating, count } = pseudoRating(product.id)
+
+  // Show the real aggregate once a product has approved reviews; otherwise the
+  // pseudo rating keeps the page looking populated (but is never emitted to
+  // structured data — only genuine reviews are).
+  const hasReviews = reviewData.aggregate.count > 0
+  const pseudo = pseudoRating(product.id)
+  const rating = hasReviews ? reviewData.aggregate.average : pseudo.rating
+  const count = hasReviews ? reviewData.aggregate.count : pseudo.count
   const notes = notesFor(product.id)
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description ?? undefined,
+    image: product.thumbnail ? [product.thumbnail] : undefined,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'USD',
+      price: product.price_usd.toFixed(2),
+      availability: 'https://schema.org/InStock',
+    },
+    ...(hasReviews
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: reviewData.aggregate.average,
+            reviewCount: reviewData.aggregate.count,
+          },
+          review: reviewData.reviews.slice(0, 5).map((r) => ({
+            '@type': 'Review',
+            reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+            author: { '@type': 'Person', name: r.author_name },
+            reviewBody: r.content,
+            datePublished: r.created_at,
+          })),
+        }
+      : {}),
+  }
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TrackEvent
         event="product_viewed"
         payload={{ handle: product.handle, title: product.title, price_usd: product.price_usd }}
@@ -110,12 +156,12 @@ export default async function ProductPage({
               {product.title}
             </h1>
 
-            <div className="mt-3 flex items-center gap-2">
+            <a href="#reviews" className="mt-3 flex w-fit items-center gap-2">
               <Stars rating={rating} className="text-base" />
-              <span className="text-sm text-neutral-500">
-                {rating.toFixed(1)} · {product.review_count ?? count} reviews
+              <span className="text-sm text-neutral-500 hover:text-pink-600">
+                {rating.toFixed(1)} · {count} reviews
               </span>
-            </div>
+            </a>
 
             <PdpActions product={product} />
 
@@ -156,6 +202,10 @@ export default async function ProductPage({
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="border-t border-neutral-100">
+        <ReviewsSection productId={product.id} data={reviewData} />
       </div>
 
       <div className="border-t border-neutral-100">

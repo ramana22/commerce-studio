@@ -154,3 +154,29 @@ Record the date of the last successful restore test here:
 | Date | Backup file | Restored by | Result |
 |------|-------------|-------------|--------|
 | _TBD_ | _run verify-restore.sh_ | | |
+
+## Reviews (Phase 11)
+
+A **Review** Medusa module (`apps/backend/src/modules/review`) owns review data,
+referenced by `product_id`. The table is created by its migration on
+`medusa db:migrate` (runs automatically via `pnpm --filter @sugar-store/backend dev`).
+
+- **Submit** — storefront PDP form → `POST /store/reviews`. Gated to **verified
+  purchasers**: the email must have an order containing the product, else `403`.
+  New reviews start `pending`.
+- **Photos** — resized client-side, `POST /store/uploads` stores them via the
+  Medusa **File module** and returns URLs. Local by default; set up
+  `@medusajs/file-s3` pointed at the R2 bucket to store review photos in R2
+  (same bucket as the catalog).
+- **Moderate** — Admin dashboard → **Reviews** (`/app/reviews`) lists pending
+  reviews with Approve/Reject. (API: `GET /admin/reviews?status=pending`,
+  `POST /admin/reviews/:id { status }`.)
+- **Aggregate** — on approve/reject the product's `metadata.rating_average` /
+  `rating_count` are recomputed, so cards, the PDP header, and the **JSON-LD**
+  (`Product` + `AggregateRating` + `Review`) reflect real ratings. Until a
+  product has approved reviews, a deterministic pseudo-rating is shown in the UI
+  but is **never** emitted to structured data.
+
+To verify end-to-end: place an order for a product, submit a review with that
+order's email, approve it in `/app/reviews`, and confirm the stars + count update
+on the PDP and card.

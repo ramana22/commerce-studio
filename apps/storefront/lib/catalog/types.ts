@@ -22,6 +22,9 @@ export interface ProductDetail {
   is_new_launch: boolean
   is_bestseller: boolean
   review_count: number | null
+  /** Denormalised aggregate rating (0–5) from approved reviews, or null. */
+  rating_average: number | null
+  rating_count: number | null
   /** Default (first) variant price. */
   price_usd: number
   msrp_usd: number | null
