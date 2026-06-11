@@ -118,9 +118,9 @@ export function ScentDna({ seed }: { seed: string }) {
                   </span>
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {tiers[i]!.map((note) => (
+                  {tiers[i]!.map((note, j) => (
                     <span
-                      key={note}
+                      key={`${tier.key}-${j}`}
                       className="rounded-full border bg-white px-3 py-1 text-xs font-medium text-brand-ink"
                       style={{ borderColor: `${tier.color}55` }}
                     >
