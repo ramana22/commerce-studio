@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getOrder } from '@/lib/order/order-service'
 import { formatUsd } from '@/lib/medusa/money'
 import { CartClearer } from '@/components/cart/cart-clearer'
+import { TrackEvent } from '@/components/analytics/track-event'
 
 export const metadata: Metadata = { title: 'Order confirmed' }
 
@@ -19,6 +20,16 @@ export default async function OrderConfirmedPage({
   return (
     <main className="mx-auto max-w-xl px-4 py-16 text-center">
       <CartClearer />
+      <TrackEvent
+        event="purchase"
+        payload={{
+          order_id: order.id,
+          display_id: order.display_id,
+          value_usd: order.total_usd,
+          items: order.item_count,
+        }}
+      />
+
 
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl">
         ✓

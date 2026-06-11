@@ -10,6 +10,7 @@ import { ProductGallery } from '@/components/product/product-gallery'
 import { PdpActions } from '@/components/product/pdp-actions'
 import { ProductRail } from '@/components/home/product-rail'
 import { Stars } from '@/components/ui/stars'
+import { TrackEvent } from '@/components/analytics/track-event'
 
 export async function generateMetadata({
   params,
@@ -82,6 +83,10 @@ export default async function ProductPage({
 
   return (
     <main>
+      <TrackEvent
+        event="product_viewed"
+        payload={{ handle: product.handle, title: product.title, price_usd: product.price_usd }}
+      />
       <div className="mx-auto max-w-7xl px-6 pb-14 pt-6">
         {/* Breadcrumb */}
         <nav className="mb-6 text-xs text-neutral-400">

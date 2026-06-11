@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { AbstractPaymentProvider, MedusaError } from '@medusajs/framework/utils'
+import { captureError, captureMessage } from '../../lib/observability'
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -213,18 +214,27 @@ export default class SquareProviderService extends AbstractPaymentProvider<Squar
     if (!paymentId) return { data: input.data ?? {} }
 
     const currency = String(input.data?.currency_code ?? 'usd').toUpperCase()
-    const refund = await this.request<{ refund: { id: string } }>(
-      '/v2/refunds',
-      {
-        method: 'POST',
-        body: {
-          idempotency_key: crypto.randomUUID(),
-          payment_id: paymentId,
-          amount_money: { amount: Math.round(Number(input.amount)), currency },
+    try {
+      const refund = await this.request<{ refund: { id: string } }>(
+        '/v2/refunds',
+        {
+          method: 'POST',
+          body: {
+            idempotency_key: crypto.randomUUID(),
+            payment_id: paymentId,
+            amount_money: { amount: Math.round(Number(input.amount)), currency },
+          },
         },
-      },
-    )
-    return { data: { ...input.data, last_refund_id: refund.refund.id } }
+      )
+      return { data: { ...input.data, last_refund_id: refund.refund.id } }
+    } catch (err) {
+      await captureError(err, {
+        scope: 'square/refundPayment',
+        square_payment_id: paymentId,
+        amount: input.amount,
+      })
+      throw err
+    }
   }
 
   async getPaymentStatus(
@@ -302,6 +312,12 @@ export default class SquareProviderService extends AbstractPaymentProvider<Squar
         .update(notificationUrl + (payload.rawData as string | Buffer))
         .digest('base64')
       if (!signature || expected !== signature) {
+        // A bad signature is security-relevant — surface it to monitoring.
+        await captureMessage(
+          'Square webhook signature verification failed',
+          'error',
+          { hasSignature: Boolean(signature) },
+        )
         return { action: 'failed' }
       }
     }
