@@ -11,6 +11,7 @@ import {
   useSpring,
   useTransform,
 } from 'motion/react'
+import { AppImage } from '@/components/ui/app-image'
 import { Stars } from '@/components/ui/stars'
 import { cn } from '@/lib/utils/cn'
 
@@ -24,8 +25,8 @@ interface Edition {
   subtitle: string
   ctaLabel: string
   ctaHref: string
-  /** Bottle liquid gradient [light, deep]. */
-  liquid: [string, string]
+  /** Rendered flacon (transparent WebP from the brand-art library). */
+  image: string
   /** Scene aura colour. */
   aura: string
   /** Background [base, accent]. */
@@ -47,7 +48,7 @@ const EDITIONS: Edition[] = [
       'Alcohol-free perfume oils that melt into skin and stay for twelve hours. Crafted to be unmistakably yours.',
     ctaLabel: 'Shop Bestsellers',
     ctaHref: '/bestsellers',
-    liquid: ['#E8A04C', '#B5571F'],
+    image: '/images/hero/hero-amber.webp',
     aura: '#C9692F',
     bg: ['#16100C', '#B5571F'],
     notes: ['Saffron', 'Amber', 'Cedarwood'],
@@ -63,7 +64,7 @@ const EDITIONS: Edition[] = [
       'Damask rose, night jasmine and a trail of soft musk — a love letter you wear on your pulse points.',
     ctaLabel: 'Explore For Her',
     ctaHref: '/for-her',
-    liquid: ['#E58AA6', '#B23A5E'],
+    image: '/images/hero/hero-bloom.webp',
     aura: '#C9698B',
     bg: ['#1B1014', '#B45A7C'],
     notes: ['Damask Rose', 'Peony', 'Soft Musk'],
@@ -79,7 +80,7 @@ const EDITIONS: Edition[] = [
       'Smoked woods, leather and cold spice with serious staying power. Quiet in a room, impossible to forget.',
     ctaLabel: 'Shop For Him',
     ctaHref: '/for-him',
-    liquid: ['#A07850', '#5F4632'],
+    image: '/images/hero/hero-noir.webp',
     aura: '#8A6A4F',
     bg: ['#0F0D0B', '#6B4A2F'],
     notes: ['Vetiver', 'Leather', 'Tobacco'],
@@ -89,68 +90,23 @@ const EDITIONS: Edition[] = [
 
 const ROTATE_MS = 7000
 
-/** Refined glass flacon — gold cap, liquid gradient, label and reflection. */
+/** Rendered flacon with an animated aura. */
 function Flacon({ edition }: { edition: Edition }) {
-  const [light, deep] = edition.liquid
   return (
-    <div className="relative h-[22rem] w-44 sm:h-[26rem] sm:w-52">
+    <div className="relative h-[24rem] w-64 sm:h-[28rem] sm:w-72">
       {/* aura */}
       <div
-        className="absolute -inset-10 animate-glow rounded-full blur-3xl"
-        style={{ backgroundColor: edition.aura, opacity: 0.4 }}
+        className="absolute inset-6 animate-glow rounded-full blur-3xl"
+        style={{ backgroundColor: edition.aura, opacity: 0.45 }}
       />
-
-      {/* cap */}
-      <div className="absolute left-1/2 top-0 h-16 w-14 -translate-x-1/2 overflow-hidden rounded-lg bg-gradient-to-b from-[#E8C26A] via-[#B8902E] to-[#8A6A1F] shadow-lg sm:h-[4.5rem] sm:w-16">
-        <div className="absolute inset-y-0 left-1/4 w-1 bg-white/30" />
-        <div className="absolute inset-y-0 right-1/4 w-0.5 bg-black/20" />
-      </div>
-      {/* collar */}
-      <div className="absolute left-1/2 top-[3.9rem] h-4 w-9 -translate-x-1/2 rounded-sm bg-gradient-to-b from-white/50 to-white/20 sm:top-[4.4rem]" />
-
-      {/* glass body */}
-      <div className="absolute left-1/2 top-[4.7rem] h-[16.5rem] w-40 -translate-x-1/2 overflow-hidden rounded-[2rem] border border-white/30 bg-white/10 shadow-glow backdrop-blur-sm sm:top-[5.3rem] sm:h-[19.5rem] sm:w-[11.5rem]">
-        {/* liquid */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-[78%]"
-          style={{
-            background: `linear-gradient(180deg, ${light}d9 0%, ${deep} 90%)`,
-          }}
-        />
-        {/* meniscus shine */}
-        <div
-          className="absolute inset-x-0 top-[22%] h-1.5 rounded-full opacity-70 blur-[1px]"
-          style={{ backgroundColor: light }}
-        />
-        {/* specular highlights */}
-        <div className="absolute bottom-4 left-3.5 top-4 w-5 rounded-full bg-white/25 blur-[2px]" />
-        <div className="absolute bottom-8 right-4 top-10 w-1.5 rounded-full bg-white/15" />
-
-        {/* label */}
-        <div className="absolute inset-x-5 top-[37%] rounded-md bg-[#FBF5EE]/95 px-2 py-3 text-center shadow-sm">
-          <p className="font-display text-[11px] font-semibold tracking-[0.26em] text-brand-ink">
-            BODYSCENT
-          </p>
-          <div className="mx-auto my-1.5 h-px w-8 bg-brand-gold" />
-          <p className="text-[8px] uppercase tracking-[0.2em] text-neutral-500">
-            {edition.edition}
-          </p>
-          <p className="mt-0.5 text-[7px] uppercase tracking-[0.16em] text-neutral-400">
-            Pure Perfume Oil
-          </p>
-        </div>
-      </div>
-
-      {/* floor reflection */}
-      <div
-        className="absolute left-1/2 top-[21.5rem] h-16 w-40 -translate-x-1/2 scale-y-[-1] rounded-[2rem] opacity-20 blur-[2px] sm:top-[25rem] sm:w-[11.5rem]"
-        style={{
-          background: `linear-gradient(0deg, transparent 30%, ${deep} 100%)`,
-          maskImage: 'linear-gradient(180deg, black, transparent 70%)',
-          WebkitMaskImage: 'linear-gradient(180deg, black, transparent 70%)',
-        }}
+      <AppImage
+        src={edition.image}
+        alt={`BodyScent ${edition.edition} flacon`}
+        fill
+        priority
+        sizes="(min-width: 640px) 288px, 256px"
+        className="object-contain drop-shadow-[0_30px_50px_rgba(10,6,4,0.55)]"
       />
-      <div className="absolute left-1/2 top-[21.7rem] h-5 w-48 -translate-x-1/2 rounded-full bg-black/40 blur-xl sm:top-[25.2rem]" />
     </div>
   )
 }

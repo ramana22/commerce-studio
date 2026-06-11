@@ -1,9 +1,16 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { findMood, moodHref, SCENT_MOODS, scentProfile } from '@/lib/catalog/scent'
+import {
+  findMood,
+  moodArtUrl,
+  moodHref,
+  SCENT_MOODS,
+  scentProfile,
+} from '@/lib/catalog/scent'
 import { getProductCards } from '@/lib/catalog/product-service'
 import { FilteredProducts } from '@/components/plp/filtered-products'
+import { AppImage } from '@/components/ui/app-image'
 import { Reveal } from '@/components/motion/reveal'
 import { cn } from '@/lib/utils/cn'
 
@@ -37,16 +44,25 @@ export default async function MoodPage({
     (p) => scentProfile(p.handle || p.id).mood.slug === m.slug,
   )
 
-  const [tint, deep] = m.accent
+  const [, deep] = m.accent
 
   return (
     <main>
       {/* Mood hero */}
       <section className="relative overflow-hidden text-white">
+        <AppImage
+          src={moodArtUrl(m.slug)}
+          alt=""
+          aria-hidden
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(110% 130% at 82% 8%, ${m.aura}59 0%, transparent 55%), linear-gradient(140deg, #1A1310 0%, ${deep} 150%)`,
+            backgroundImage: `radial-gradient(110% 130% at 82% 8%, ${m.aura}59 0%, transparent 55%), linear-gradient(140deg, #1A1310f2 0%, ${deep}cc 150%)`,
           }}
         />
         <div className="absolute inset-0 bg-grain opacity-[0.15]" />

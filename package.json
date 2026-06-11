@@ -13,6 +13,7 @@
     "catalog:transform": "pnpm --filter @sugar-store/catalog-import run transform",
     "catalog:import": "pnpm --filter @sugar-store/catalog-import run import",
     "backend:seed": "pnpm --filter @sugar-store/backend run seed",
+    "media:brand-art": "pnpm --filter @sugar-store/media-pipeline run brand-art",
     "media:test-images": "pnpm --filter @sugar-store/media-pipeline run create-test-images",
     "media:process": "pnpm --filter @sugar-store/media-pipeline run process",
     "media:pipeline": "pnpm --filter @sugar-store/media-pipeline run pipeline",

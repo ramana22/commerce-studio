@@ -11,8 +11,8 @@ interface Reel {
   likes: string
   duration: string
   href: string
-  /** Stable demo photo lock (loremflickr). */
-  lock: number
+  /** Campaign render from the brand-art library. */
+  image: string
 }
 
 /** Demo community reels — swapped for real UGC via the Sanity reel block. */
@@ -23,7 +23,7 @@ const REELS: Reel[] = [
     likes: '12.1k',
     duration: '0:09',
     href: moodHref('fresh'),
-    lock: 61,
+    image: '/images/lifestyle/reel-01.webp',
   },
   {
     caption: 'Layering Velvet Bloom over Skin Musk — obsessed',
@@ -31,7 +31,7 @@ const REELS: Reel[] = [
     likes: '9.4k',
     duration: '0:14',
     href: moodHref('floral'),
-    lock: 62,
+    image: '/images/lifestyle/reel-02.webp',
   },
   {
     caption: 'He finally found his signature. Noir Vetiver, obviously',
@@ -39,7 +39,7 @@ const REELS: Reel[] = [
     likes: '21.7k',
     duration: '0:11',
     href: moodHref('woody'),
-    lock: 63,
+    image: '/images/lifestyle/reel-03.webp',
   },
   {
     caption: 'Date night in one roll: Praline Hour on pulse points',
@@ -47,7 +47,7 @@ const REELS: Reel[] = [
     likes: '15.3k',
     duration: '0:13',
     href: moodHref('sweet'),
-    lock: 64,
+    image: '/images/lifestyle/reel-04.webp',
   },
   {
     caption: 'Pocket-size perfume oil = no more 5pm fade',
@@ -55,7 +55,7 @@ const REELS: Reel[] = [
     likes: '7.8k',
     duration: '0:08',
     href: '/bestsellers',
-    lock: 65,
+    image: '/images/lifestyle/reel-05.webp',
   },
   {
     caption: 'Unboxing the gift set — that wax seal though',
@@ -63,13 +63,9 @@ const REELS: Reel[] = [
     likes: '11.2k',
     duration: '0:16',
     href: '/gifting',
-    lock: 66,
+    image: '/images/lifestyle/reel-06.webp',
   },
 ]
-
-function reelPhoto(lock: number): string {
-  return `https://loremflickr.com/600/1067/perfume?lock=${lock}`
-}
 
 /** Instagram-style lifestyle rail — trust and mood, not just bottles. */
 export function LifestyleReel() {
@@ -92,14 +88,14 @@ export function LifestyleReel() {
 
       <CarouselRail>
         {REELS.map((reel) => (
-          <li key={reel.lock} className="w-56 shrink-0 snap-start sm:w-64">
+          <li key={reel.image} className="w-56 shrink-0 snap-start sm:w-64">
             <Link
               href={reel.href}
               className="group relative block aspect-[9/16] overflow-hidden rounded-3xl bg-neutral-900 shadow-card transition-all duration-500 ease-smooth hover:-translate-y-1.5 hover:shadow-hover"
             >
               <AppImage
-                src={reelPhoto(reel.lock)}
-                fallbackSrc={bottleImage(`reel-${reel.lock}`)}
+                src={reel.image}
+                fallbackSrc={bottleImage(reel.image)}
                 alt={reel.caption}
                 fill
                 sizes="(min-width: 640px) 256px, 224px"

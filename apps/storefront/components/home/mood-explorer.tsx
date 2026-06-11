@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { SCENT_MOODS, moodHref, type ScentMood } from '@/lib/catalog/scent'
+import { SCENT_MOODS, moodArtUrl, moodHref, type ScentMood } from '@/lib/catalog/scent'
+import { AppImage } from '@/components/ui/app-image'
 import { Reveal } from '@/components/motion/reveal'
 import { cn } from '@/lib/utils/cn'
 
-/** Gradient art panel previewing the active mood. */
+/** Mood-art panel previewing the active mood. */
 function MoodPreview({ mood }: { mood: ScentMood }) {
   const [tint, deep] = mood.accent
   return (
@@ -19,10 +20,21 @@ function MoodPreview({ mood }: { mood: ScentMood }) {
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className="absolute inset-0 overflow-hidden rounded-3xl"
     >
+      <AppImage
+        src={moodArtUrl(mood.slug)}
+        alt=""
+        aria-hidden
+        fill
+        sizes="(min-width: 1024px) 44vw, 100vw"
+        className="object-cover"
+      />
       <div
         className="absolute inset-0"
-        style={{ backgroundImage: `linear-gradient(150deg, ${tint} 0%, ${deep} 130%)` }}
+        style={{
+          backgroundImage: `linear-gradient(150deg, ${tint}33 0%, ${deep}b3 130%)`,
+        }}
       />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/15" />
       <div className="absolute inset-0 bg-grain opacity-[0.14]" />
       <div
         className="absolute -right-12 -top-12 h-64 w-64 animate-aura rounded-full opacity-50 blur-3xl"
@@ -178,12 +190,23 @@ export function MoodExplorer() {
                   href={moodHref(m.slug)}
                   className="group relative block aspect-[4/5] overflow-hidden rounded-3xl p-6 text-white shadow-card transition-all duration-500 hover:-translate-y-1 hover:shadow-hover"
                 >
+                  <div className="absolute inset-0 transition-transform duration-700 ease-smooth group-hover:scale-105">
+                    <AppImage
+                      src={moodArtUrl(m.slug)}
+                      alt=""
+                      aria-hidden
+                      fill
+                      sizes="240px"
+                      className="object-cover"
+                    />
+                  </div>
                   <div
-                    className="absolute inset-0 transition-transform duration-700 ease-smooth group-hover:scale-105"
+                    className="absolute inset-0"
                     style={{
-                      backgroundImage: `linear-gradient(160deg, ${tint} 0%, ${deep} 135%)`,
+                      backgroundImage: `linear-gradient(160deg, ${tint}26 0%, ${deep}b3 135%)`,
                     }}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
                   <div className="absolute inset-0 bg-grain opacity-[0.14]" />
                   <div
                     className="absolute -right-8 -top-8 h-36 w-36 animate-aura rounded-full opacity-50 blur-2xl"

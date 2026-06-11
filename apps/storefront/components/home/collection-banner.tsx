@@ -44,7 +44,7 @@ export function CollectionBanner() {
                 className="absolute -inset-y-[9%] inset-x-0"
               >
                 <AppImage
-                  src="https://loremflickr.com/900/1100/perfume?lock=42"
+                  src="/images/campaign/golden-hour.webp"
                   fallbackSrc={bottleImage('golden-hour-edit')}
                   alt="The Golden Hour Edit — amber perfume oils in evening light"
                   fill

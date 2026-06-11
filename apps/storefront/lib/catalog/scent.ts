@@ -107,6 +107,11 @@ export function moodHref(slug: string): string {
   return `/scents/${slug}`
 }
 
+/** Generated mood-art panel (see scripts/media-pipeline/brand-art.ts). */
+export function moodArtUrl(slug: string): string {
+  return `/images/moods/mood-${slug}.webp`
+}
+
 /** Mood-coherent note pools — [top, heart, base] options per mood. */
 const NOTE_POOLS: Record<string, [string[], string[], string[]]> = {
   fresh: [
