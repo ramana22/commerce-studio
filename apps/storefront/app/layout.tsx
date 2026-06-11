@@ -10,6 +10,7 @@ import { SiteHeader } from '@/components/layout/site-header'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { AnnouncementBar } from '@/components/layout/announcement-bar'
 import { PromoBar } from '@/components/layout/promo-bar'
+import { WebVitals } from '@/components/analytics/web-vitals'
 import { cn } from '@/lib/utils/cn'
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={cn(fontSans.variable, fontDisplay.variable)}>
       <body className="flex min-h-screen flex-col font-sans">
+        <WebVitals />
         <MotionConfig reducedMotion="user">
           <CartProvider initialCart={cart}>
             {announcement ? <AnnouncementBar data={announcement} /> : <PromoBar />}

@@ -2,6 +2,7 @@ import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import type { MedusaContainer } from '@medusajs/framework/types'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import { capturePaymentWorkflow } from '@medusajs/medusa/core-flows'
+import { captureError } from '../lib/observability'
 
 /** Minimal logger surface used by this subscriber. */
 type Log = {
@@ -112,6 +113,11 @@ async function sendConfirmationEmail(order: PlacedOrder, logger: Log): Promise<v
       )
     } catch (err) {
       logger.error(`order.placed: email send failed — ${(err as Error).message}`)
+      await captureError(err, {
+        scope: 'order.placed/email',
+        order_id: order.id,
+        display_id: order.display_id,
+      })
     }
     return
   }
@@ -141,6 +147,12 @@ async function captureOrderPayments(
       logger.error(
         `order.placed: capture failed for ${payment.id} — ${(err as Error).message}`,
       )
+      await captureError(err, {
+        scope: 'order.placed/capture',
+        order_id: order.id,
+        display_id: order.display_id,
+        payment_id: payment.id,
+      })
     }
   }
 }

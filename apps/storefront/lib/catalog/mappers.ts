@@ -90,6 +90,8 @@ export function mapProductToCard(product: Product): ProductCard {
     price_usd: prices.price_usd,
     msrp_usd: prices.msrp_usd,
     shades: (product.variants ?? []).map(toShade),
+    rating_average: typeof m.rating_average === 'number' ? m.rating_average : null,
+    rating_count: typeof m.rating_count === 'number' ? m.rating_count : null,
   }
 }
 
@@ -133,6 +135,8 @@ export function mapProductToDetail(product: Product): ProductDetail {
     is_bestseller: m.is_bestseller === true,
     review_count:
       typeof m.review_count === 'number' ? m.review_count : null,
+    rating_average: typeof m.rating_average === 'number' ? m.rating_average : null,
+    rating_count: typeof m.rating_count === 'number' ? m.rating_count : null,
     price_usd: first?.price_usd ?? 0,
     msrp_usd: first?.msrp_usd ?? null,
     variants,

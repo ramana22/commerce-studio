@@ -46,6 +46,10 @@ export interface ProductCard {
   /** Original MSRP in full USD, or null when no discount applies. */
   msrp_usd: number | null
   shades: SugarShade[]
+  /** Denormalised aggregate rating (0–5) from approved reviews, or null. */
+  rating_average: number | null
+  /** Number of approved reviews backing the aggregate. */
+  rating_count: number | null
 }
 
 /** Cart line item populated from Medusa, enriched with Sugar metadata. */

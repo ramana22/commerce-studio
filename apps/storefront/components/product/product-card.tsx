@@ -30,7 +30,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       ? Math.round((1 - product.price_usd / product.msrp_usd) * 100)
       : null
   const fromPrice = product.shades.length > 1
-  const { rating, count } = pseudoRating(product.id)
+  // Real aggregate from approved reviews when present; pseudo rating keeps the
+  // catalog looking populated before a product has reviews.
+  const { rating, count } =
+    product.rating_count && product.rating_count > 0
+      ? { rating: product.rating_average ?? 0, count: product.rating_count }
+      : pseudoRating(product.id)
   const hover = product.hover_image ?? product.thumbnail
   const fallback = bottleImage(product.handle || product.id)
 
