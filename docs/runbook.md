@@ -181,6 +181,44 @@ To verify end-to-end: place an order for a product, submit a review with that
 order's email, approve it in `/app/reviews`, and confirm the stars + count update
 on the PDP and card.
 
+## Search — Meilisearch (Phase 13)
+
+Instant, typo-tolerant, faceted product search.
+
+**Stand it up** (docker-compose includes a `meilisearch` service on :7700):
+
+```bash
+docker-compose up -d meilisearch
+```
+
+Set `MEILISEARCH_HOST` + `MEILISEARCH_MASTER_KEY` (backend), then create a
+**search-only** key and put it in `NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY` (the
+browser must never see the master key):
+
+```bash
+curl -s -X POST http://localhost:7700/keys \
+  -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" -H 'Content-Type: application/json' \
+  -d '{"actions":["search"],"indexes":["products"],"expiresAt":null,"description":"storefront search"}'
+```
+
+**Build the index** (configures settings + pushes all published products):
+
+```bash
+pnpm --filter @sugar-store/backend exec medusa exec ./src/scripts/reindex-search.ts
+```
+
+- **Self-updating** — the `product-search-index` subscriber re-indexes on
+  `product.created/updated` and removes on `product.deleted`, so the index stays
+  fresh as the catalog changes.
+- **Storefront** — the header search overlay queries Meilisearch directly from
+  the browser (instant, ~tens of ms), with genre + price facets and a sort. When
+  `NEXT_PUBLIC_MEILISEARCH_HOST`/key are unset it falls back to the Medusa search
+  action, so search always works.
+
+Verify: open search, type a deliberate typo (e.g. "vanila"), confirm ranked
+results return in a few ms with the "N results in Xms" line, and that genre/price
+facets refine the list. Edit a product title in admin and confirm search reflects
+it within a moment.
 ## Abandoned-cart recovery (Phase 12)
 
 Hourly job `apps/backend/src/jobs/abandoned-cart-recovery.ts` scans active
