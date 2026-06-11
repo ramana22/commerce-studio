@@ -116,6 +116,13 @@ export async function configureIndex(): Promise<void> {
       'exactness',
       'rating_average:desc',
     ],
+    // More forgiving typo tolerance: allow 1 typo from 4 letters and 2 typos
+    // from 6 letters (defaults are 5 and 9), so sloppy queries like "vanala"
+    // still resolve to "vanilla".
+    typoTolerance: {
+      enabled: true,
+      minWordSizeForTypos: { oneTypo: 4, twoTypos: 6 },
+    },
   })
 }
 
