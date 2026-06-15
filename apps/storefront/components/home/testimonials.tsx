@@ -115,7 +115,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-cream px-3 py-1.5 text-[11px] font-medium text-brand-ink">
           <span
             className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: mood?.aura ?? '#C9923E' }}
+            style={{ backgroundColor: mood?.aura ?? '#C8A24A' }}
           />
           {t.scent}
         </span>

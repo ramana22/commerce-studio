@@ -21,7 +21,7 @@ export function CategoryIntro({
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: `radial-gradient(120% 140% at 80% 10%, ${accent?.[1] ?? '#B5571F'}66 0%, transparent 55%), linear-gradient(135deg, ${accent?.[0] ?? '#1A1310'}, ${accent?.[1] ?? '#B5571F'})`,
+          backgroundImage: `radial-gradient(120% 140% at 80% 10%, ${accent?.[1] ?? '#0E7C5A'}66 0%, transparent 55%), linear-gradient(135deg, ${accent?.[0] ?? '#10221B'}, ${accent?.[1] ?? '#0E7C5A'})`,
         }}
       />
       <div className="absolute inset-0 bg-grain opacity-15" />

@@ -14,13 +14,13 @@ const CARD_SIZES = '(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw'
 
 function Badge({ product }: { product: ProductCardData }) {
   const label = product.is_new_launch
-    ? 'NEW'
+    ? 'NEW LAUNCH'
     : product.is_bestseller
       ? 'BESTSELLER'
       : product.badge
   if (!label) return null
   return (
-    <span className="absolute left-2.5 top-2.5 z-10 rounded-full bg-brand-ink/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur">
+    <span className="absolute left-2.5 top-2.5 z-10 rounded-md bg-brand-ink px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
       {label}
     </span>
   )
@@ -41,13 +41,15 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const hover = product.hover_image ?? product.thumbnail
   const fallback = bottleImage(product.handle || product.id)
   const profile = scentProfile(product.handle || product.id)
+  const href = `/products/${product.handle}`
 
   return (
-    <Link
-      href={`/products/${product.handle}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white transition-all duration-500 ease-smooth hover:-translate-y-1.5 hover:border-transparent hover:shadow-hover"
-    >
-      <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-neutral-50 to-neutral-100">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white transition-all duration-500 ease-smooth hover:-translate-y-1.5 hover:border-transparent hover:shadow-hover">
+      <Link
+        href={href}
+        aria-label={product.title}
+        className="relative block aspect-[4/5] overflow-hidden bg-gradient-to-b from-neutral-50 to-neutral-100"
+      >
         <Badge product={product} />
         <WishlistButton label={product.title} />
 
@@ -82,51 +84,56 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           />
           {profile.mood.label}
         </span>
-
-        {/* Quick add — always reachable on touch, revealed on hover elsewhere. */}
-        <div className="pointer-events-none absolute bottom-3 right-3 z-10 translate-y-0 opacity-100 transition-all duration-500 ease-smooth sm:translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
-          <QuickAddButton
-            variantId={product.default_variant_id}
-            title={product.title}
-          />
-        </div>
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
         <div className="flex items-center gap-1.5">
           <Stars rating={rating} className="text-[13px]" />
           <span className="text-[11px] text-neutral-400">({count})</span>
         </div>
-        <p className="line-clamp-2 text-sm font-medium leading-snug text-brand-ink">
-          {product.title}
-        </p>
+        <Link href={href} className="transition-colors hover:text-pink-700">
+          <p className="line-clamp-2 text-sm font-medium leading-snug text-brand-ink">
+            {product.title}
+          </p>
+        </Link>
         <p className="truncate text-[11px] text-neutral-400">
           {notesTeaser(profile)}
         </p>
         <ShadeSwatches shades={product.shades} />
-        <div className="mt-auto flex items-baseline gap-2 pt-1.5">
-          {fromPrice ? (
-            <span className="text-[11px] uppercase tracking-wide text-neutral-400">
-              From
-            </span>
-          ) : null}
-          <span className="font-semibold text-brand-ink">
-            {formatUsd(product.price_usd)}
-          </span>
-          {product.msrp_usd && product.msrp_usd > product.price_usd ? (
-            <>
-              <span className="text-sm text-neutral-400 line-through">
-                {formatUsd(product.msrp_usd)}
+
+        <div className="mt-auto pt-2">
+          <div className="flex items-baseline gap-2">
+            {fromPrice ? (
+              <span className="text-[11px] uppercase tracking-wide text-neutral-400">
+                From
               </span>
-              {discount ? (
-                <span className="text-xs font-semibold text-pink-700">
-                  {discount}% off
+            ) : null}
+            <span className="font-semibold text-brand-ink">
+              {formatUsd(product.price_usd)}
+            </span>
+            {product.msrp_usd && product.msrp_usd > product.price_usd ? (
+              <>
+                <span className="text-sm text-neutral-400 line-through">
+                  {formatUsd(product.msrp_usd)}
                 </span>
-              ) : null}
-            </>
-          ) : null}
+                {discount ? (
+                  <span className="text-xs font-semibold text-pink-700">
+                    {discount}% off
+                  </span>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+
+          <QuickAddButton
+            variant="block"
+            label="Add to Bag"
+            variantId={product.default_variant_id}
+            title={product.title}
+            className="mt-3"
+          />
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

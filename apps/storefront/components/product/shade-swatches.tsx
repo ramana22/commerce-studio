@@ -15,17 +15,19 @@ export function ShadeSwatches({
   const extra = withHex.length - shown.length
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {shown.map((s) => (
         <span
           key={s.sku || s.name}
           title={s.name}
-          className="inline-block h-3.5 w-3.5 rounded-full border border-neutral-300"
+          className="inline-block h-4 w-4 rounded-full border border-white shadow-[0_0_0_1px_rgba(16,34,27,0.18)]"
           style={{ backgroundColor: `#${s.hex}` }}
         />
       ))}
       {extra > 0 ? (
-        <span className="text-xs text-neutral-500">+{extra}</span>
+        <span className="ml-0.5 text-[11px] font-medium text-neutral-500">
+          +{extra} Shades
+        </span>
       ) : null}
     </div>
   )

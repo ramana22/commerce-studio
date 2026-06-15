@@ -38,7 +38,8 @@ export default async function HomePage() {
   // Rich default landing, built from live Medusa products. Rails are driven by
   // the perfume categories so the home stays on-theme; if none are populated
   // yet (e.g. before re-seeding) we fall back to a general "featured" rail.
-  const [bestsellers, forHer, forHim] = await Promise.all([
+  const [newLaunches, bestsellers, forHer, forHim] = await Promise.all([
+    getProductCards({ limit: 12, newLaunchesOnly: true }),
     getProductsByCategory('bestsellers', 12),
     getProductsByCategory('for-her', 12),
     getProductsByCategory('for-him', 12),
@@ -51,6 +52,13 @@ export default async function HomePage() {
     <main>
       <SignatureHero />
       <Marquee />
+      <CategoryShowcase />
+      <ProductRail
+        eyebrow="Just dropped"
+        title="New Launches"
+        products={newLaunches}
+        viewAllHref="/bestsellers"
+      />
       <MoodExplorer />
       <ProductRail
         eyebrow="Most loved"
@@ -65,7 +73,6 @@ export default async function HomePage() {
       />
       <NotesJourney />
       <CollectionBanner />
-      <CategoryShowcase />
       <ProductRail
         eyebrow="For Her"
         title="Floral & Gourmand"

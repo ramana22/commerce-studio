@@ -47,9 +47,9 @@
     text-wrap: balance;
   }
 
-  /* Warm ember gradient text for headings / the wordmark. */
+  /* Emerald → gold brand gradient text for headings / the wordmark. */
   .text-gradient-ember {
-    background-image: linear-gradient(100deg, #b5571f 0%, #c9923e 55%, #e3a877 100%);
+    background-image: linear-gradient(100deg, #0e7c5a 0%, #2fa37a 50%, #c8a24a 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -57,7 +57,7 @@
 
   /* Animated brand gradient surface (pair with `animate-gradient-x`). */
   .bg-ember-animated {
-    background-image: linear-gradient(120deg, #1a1310, #3b2730, #b5571f, #c9923e);
+    background-image: linear-gradient(120deg, #10221b, #15382c, #0e7c5a, #c8a24a);
     background-size: 300% 300%;
   }
 
@@ -72,7 +72,7 @@
 
   /* Huge outlined watermark words behind editorial sections. */
   .text-stroke-ink {
-    -webkit-text-stroke: 1px rgba(26, 19, 16, 0.14);
+    -webkit-text-stroke: 1px rgba(16, 34, 27, 0.14);
     color: transparent;
   }
   .text-stroke-white {

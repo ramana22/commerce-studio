@@ -30,8 +30,8 @@ function toSlides(block: HeroCarouselBlock): Slide[] {
     subtitle: s.subtitle ?? '',
     ctaLabel: s.ctaLabel ?? 'Shop now',
     ctaHref: s.ctaHref ?? '/bestsellers',
-    accent: [s.bgColor ?? '#1A1310', s.accentColor ?? '#B5571F'],
-    liquid: s.liquidColor ?? '#C9692F',
+    accent: [s.bgColor ?? '#10221B', s.accentColor ?? '#0E7C5A'],
+    liquid: s.liquidColor ?? '#2FA37A',
   }))
 }
 

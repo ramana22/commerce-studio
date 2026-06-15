@@ -62,7 +62,7 @@ export default async function MoodPage({
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(110% 130% at 82% 8%, ${m.aura}59 0%, transparent 55%), linear-gradient(140deg, #1A1310f2 0%, ${deep}cc 150%)`,
+            backgroundImage: `radial-gradient(110% 130% at 82% 8%, ${m.aura}59 0%, transparent 55%), linear-gradient(140deg, #10221Bf2 0%, ${deep}cc 150%)`,
           }}
         />
         <div className="absolute inset-0 bg-grain opacity-[0.15]" />

@@ -26,8 +26,8 @@ const DEFAULT_SLIDES: Slide[] = [
     subtitle: 'Quality is not a compromise. Alcohol-free oils that last all day.',
     ctaLabel: 'Shop Bestsellers',
     ctaHref: '/bestsellers',
-    accent: ['#1A1310', '#B5571F'],
-    liquid: '#C9692F',
+    accent: ['#0A1A13', '#0E7C5A'],
+    liquid: '#2FA37A',
   },
   {
     eyebrow: 'Inspired by the Icons',
@@ -36,8 +36,8 @@ const DEFAULT_SLIDES: Slide[] = [
     subtitle: 'Premium impressions of the fragrances you love — for a fraction of the price.',
     ctaLabel: 'Explore For Her',
     ctaHref: '/for-her',
-    accent: ['#3B2730', '#E3A877'],
-    liquid: '#E08A3C',
+    accent: ['#15382C', '#2FA37A'],
+    liquid: '#C8A24A',
   },
   {
     eyebrow: 'Layer Your Scent',
@@ -46,8 +46,8 @@ const DEFAULT_SLIDES: Slide[] = [
     subtitle: 'Mix three roll-ons and make a fragrance that is unmistakably you.',
     ctaLabel: 'Build a Combo',
     ctaHref: '/combos',
-    accent: ['#2B211C', '#C9923E'],
-    liquid: '#C9923E',
+    accent: ['#13241D', '#C8A24A'],
+    liquid: '#C8A24A',
   },
   {
     eyebrow: '12-Hour Wear',
@@ -56,8 +56,8 @@ const DEFAULT_SLIDES: Slide[] = [
     subtitle: 'Woody, spicy and aquatic blends with serious staying power.',
     ctaLabel: 'Shop For Him',
     ctaHref: '/for-him',
-    accent: ['#15110F', '#8A6A4F'],
-    liquid: '#6F5236',
+    accent: ['#08120D', '#0B6147'],
+    liquid: '#1A8B62',
   },
 ]
 

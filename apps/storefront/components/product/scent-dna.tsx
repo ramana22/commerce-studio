@@ -6,9 +6,9 @@ import { moodHref, scentProfile } from '@/lib/catalog/scent'
 import { cn } from '@/lib/utils/cn'
 
 const TIER_META = [
-  { key: 'top', label: 'Top', life: 'First 15 minutes', color: '#E8A04C' },
-  { key: 'heart', label: 'Heart', life: '15 min – 2 hours', color: '#C9692F' },
-  { key: 'base', label: 'Base', life: '2 – 12 hours', color: '#8C4A1A' },
+  { key: 'top', label: 'Top', life: 'First 15 minutes', color: '#D9B45A' },
+  { key: 'heart', label: 'Heart', life: '15 min – 2 hours', color: '#2FA37A' },
+  { key: 'base', label: 'Base', life: '2 – 12 hours', color: '#0B5038' },
 ] as const
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -92,7 +92,7 @@ export function ScentDna({ seed }: { seed: string }) {
             whileInView={{ scaleY: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.9, ease: EASE }}
-            className="absolute bottom-3 left-[7px] top-3 w-px origin-top bg-gradient-to-b from-[#E8A04C] via-[#C9692F] to-[#8C4A1A]"
+            className="absolute bottom-3 left-[7px] top-3 w-px origin-top bg-gradient-to-b from-[#D9B45A] via-[#2FA37A] to-[#0B5038]"
           />
           {TIER_META.map((tier, i) => (
             <motion.li
