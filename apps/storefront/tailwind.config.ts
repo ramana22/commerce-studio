@@ -13,37 +13,38 @@ const config: Config = {
         display: ['var(--font-display)', 'var(--font-sans)', 'sans-serif'],
       },
       colors: {
-        // BodyScent ember — a warm amber/copper brand. Overrides Tailwind's
-        // default pink scale so every pink-* utility across the app maps to the
-        // brand colour (kept as `pink-*` to avoid churn across components).
+        // BodyScent — an emerald & champagne-gold botanical-luxury brand.
+        // Overrides Tailwind's default pink scale so every pink-* utility across
+        // the app maps to the brand emerald (kept as `pink-*` to avoid churn
+        // across components — the key name is historical, the colour is emerald).
         pink: {
-          50: '#FCF6EF',
-          100: '#F8E7D6',
-          200: '#EFC9A9',
-          300: '#E3A877',
-          400: '#D98A4E',
-          500: '#CC6E2C',
-          600: '#B5571F',
-          700: '#974318',
-          800: '#793516',
-          900: '#5A2712',
+          50: '#ECF7F1',
+          100: '#D2ECE0',
+          200: '#A7D9C3',
+          300: '#6FBE9F',
+          400: '#3AA47C',
+          500: '#1A8B62',
+          600: '#0E7C5A',
+          700: '#0B6147',
+          800: '#0A4D3A',
+          900: '#08382B',
         },
         brand: {
-          pink: '#B5571F',
-          pinkDark: '#974318',
-          ink: '#1A1310',
-          cream: '#FBF5EE',
-          gold: '#C9923E',
-          plum: '#3B2730',
+          pink: '#0E7C5A',
+          pinkDark: '#0B6147',
+          ink: '#10221B',
+          cream: '#F4F8F4',
+          gold: '#C8A24A',
+          plum: '#15382C',
         },
       },
       backgroundImage: {
         'ember-radial':
-          'radial-gradient(120% 120% at 0% 0%, #F8E7D6 0%, #EFC9A9 45%, #B5571F 100%)',
+          'radial-gradient(120% 120% at 0% 0%, #D2ECE0 0%, #A7D9C3 45%, #0E7C5A 100%)',
         'ember-sheen':
-          'linear-gradient(135deg, #1A1310 0%, #3B2730 45%, #B5571F 100%)',
+          'linear-gradient(135deg, #10221B 0%, #15382C 45%, #0E7C5A 100%)',
         'gold-line':
-          'linear-gradient(90deg, transparent, #C9923E 50%, transparent)',
+          'linear-gradient(90deg, transparent, #C8A24A 50%, transparent)',
       },
       borderRadius: {
         xl: '0.875rem',
@@ -51,9 +52,9 @@ const config: Config = {
         '3xl': '1.75rem',
       },
       boxShadow: {
-        card: '0 1px 2px rgba(26,19,16,0.04), 0 8px 24px -12px rgba(26,19,16,0.14)',
-        hover: '0 18px 40px -16px rgba(181,87,31,0.45)',
-        glow: '0 0 0 1px rgba(201,146,62,0.25), 0 20px 60px -20px rgba(181,87,31,0.5)',
+        card: '0 1px 2px rgba(16,34,27,0.04), 0 8px 24px -12px rgba(16,34,27,0.16)',
+        hover: '0 18px 40px -16px rgba(14,124,90,0.42)',
+        glow: '0 0 0 1px rgba(200,162,74,0.28), 0 20px 60px -20px rgba(14,124,90,0.5)',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.22, 1, 0.36, 1)',

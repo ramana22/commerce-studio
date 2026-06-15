@@ -35,8 +35,8 @@ export function WishlistButton({ label }: { label: string }) {
         initial={false}
         animate={{ scale: saved ? [1, 1.35, 1] : 1 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        fill={saved ? '#B5571F' : 'none'}
-        stroke={saved ? '#B5571F' : 'currentColor'}
+        fill={saved ? '#0E7C5A' : 'none'}
+        stroke={saved ? '#0E7C5A' : 'currentColor'}
         strokeWidth={1.8}
       >
         <path d="M12 21s-7.5-4.6-9.7-9.1C.9 9 2 6 4.8 5.2 6.9 4.6 9 5.6 12 8.3c3-2.7 5.1-3.7 7.2-3.1C22 6 23.1 9 21.7 11.9 19.5 16.4 12 21 12 21z" />

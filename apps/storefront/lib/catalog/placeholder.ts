@@ -40,12 +40,12 @@ export function bottleImage(seed: string): string {
   const [c1, c2] = SCENTS[h % SCENTS.length]!
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'>
 <defs>
-<linearGradient id='bg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#FBF5EE'/><stop offset='1' stop-color='#F1E2CF'/></linearGradient>
+<linearGradient id='bg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#F4F8F4'/><stop offset='1' stop-color='#E1EEE8'/></linearGradient>
 <linearGradient id='liq' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/></linearGradient>
 </defs>
 <rect width='400' height='500' fill='url(#bg)'/>
-<ellipse cx='200' cy='432' rx='96' ry='16' fill='#1A1310' opacity='0.10'/>
-<rect x='168' y='66' width='64' height='48' rx='10' fill='#241d1a'/>
+<ellipse cx='200' cy='432' rx='96' ry='16' fill='#10221B' opacity='0.10'/>
+<rect x='168' y='66' width='64' height='48' rx='10' fill='#15241d'/>
 <rect x='184' y='112' width='32' height='26' fill='${c2}' opacity='0.5'/>
 <rect x='120' y='134' width='160' height='268' rx='28' fill='url(#liq)' stroke='#ffffff' stroke-opacity='0.45' stroke-width='2'/>
 <rect x='142' y='156' width='20' height='200' rx='10' fill='#ffffff' opacity='0.2'/>

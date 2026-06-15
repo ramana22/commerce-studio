@@ -49,8 +49,8 @@ const EDITIONS: Edition[] = [
     ctaLabel: 'Shop Bestsellers',
     ctaHref: '/bestsellers',
     image: '/images/hero/hero-amber.webp',
-    aura: '#C9692F',
-    bg: ['#16100C', '#B5571F'],
+    aura: '#2FA37A',
+    bg: ['#0A1A13', '#0E7C5A'],
     notes: ['Saffron', 'Amber', 'Cedarwood'],
     edition: 'Nº 01 · Amber Oud',
   },
@@ -65,8 +65,8 @@ const EDITIONS: Edition[] = [
     ctaLabel: 'Explore For Her',
     ctaHref: '/for-her',
     image: '/images/hero/hero-bloom.webp',
-    aura: '#C9698B',
-    bg: ['#1B1014', '#B45A7C'],
+    aura: '#C8A24A',
+    bg: ['#0C1C16', '#15795A'],
     notes: ['Damask Rose', 'Peony', 'Soft Musk'],
     edition: 'Nº 02 · Velvet Bloom',
   },
@@ -81,8 +81,8 @@ const EDITIONS: Edition[] = [
     ctaLabel: 'Shop For Him',
     ctaHref: '/for-him',
     image: '/images/hero/hero-noir.webp',
-    aura: '#8A6A4F',
-    bg: ['#0F0D0B', '#6B4A2F'],
+    aura: '#1A8B62',
+    bg: ['#08120D', '#0B6147'],
     notes: ['Vetiver', 'Leather', 'Tobacco'],
     edition: 'Nº 03 · Noir Vetiver',
   },
@@ -282,9 +282,9 @@ export function SignatureHero() {
               {['SK', 'AR', 'MJ', 'TD'].map((initials, i) => (
                 <span
                   key={initials}
-                  className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#16100C] text-[10px] font-bold text-white"
+                  className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0A1A13] text-[10px] font-bold text-white"
                   style={{
-                    background: `linear-gradient(135deg, ${['#CC6E2C', '#B45A7C', '#6B4A2F', '#C9923E'][i]}, #1A1310)`,
+                    background: `linear-gradient(135deg, ${['#0E7C5A', '#2FA37A', '#C8A24A', '#0B6147'][i]}, #10221B)`,
                   }}
                 >
                   {initials}
@@ -313,7 +313,7 @@ export function SignatureHero() {
               className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 animate-spin-slow rounded-full opacity-25"
               style={{
                 background:
-                  'conic-gradient(from 0deg, transparent 0%, #C9923E 12%, transparent 26%, transparent 55%, #C9923E66 68%, transparent 80%)',
+                  'conic-gradient(from 0deg, transparent 0%, #C8A24A 12%, transparent 26%, transparent 55%, #C8A24A66 68%, transparent 80%)',
                 maskImage: 'radial-gradient(closest-side, transparent 78%, black 80%)',
                 WebkitMaskImage: 'radial-gradient(closest-side, transparent 78%, black 80%)',
               }}

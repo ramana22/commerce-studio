@@ -28,7 +28,7 @@ const STAGES: Stage[] = [
     heading: 'The spark of first impressions',
     copy: 'Bright, sparkling molecules that lift off the skin the moment you roll. They open the story — citrus, spice and dew — then gracefully step aside.',
     notes: ['Bergamot', 'Pink Pepper', 'Mandarin'],
-    color: '#E8A04C',
+    color: '#D9B45A',
   },
   {
     n: '02',
@@ -37,7 +37,7 @@ const STAGES: Stage[] = [
     heading: 'The soul of the scent',
     copy: 'As the sparkle settles, the heart blooms. Florals and soft spice round into the signature people will remember you by.',
     notes: ['Damask Rose', 'Jasmine', 'Orris'],
-    color: '#C9692F',
+    color: '#2FA37A',
   },
   {
     n: '03',
@@ -46,7 +46,7 @@ const STAGES: Stage[] = [
     heading: 'The memory it leaves',
     copy: 'Deep resins, woods and musks that anchor into skin and linger long after you leave. This is the part that stays with them.',
     notes: ['Oud', 'Amber', 'Sandalwood'],
-    color: '#8C4A1A',
+    color: '#0B5038',
   },
 ]
 
@@ -80,7 +80,7 @@ export function NotesJourney() {
   const active = STAGES[stage] ?? STAGES[0]!
 
   return (
-    <section ref={ref} className="relative h-[320vh] bg-[#16100C] text-white">
+    <section ref={ref} className="relative h-[320vh] bg-[#0A1A13] text-white">
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
         {/* Ambient glow follows the liquid colour */}
         <motion.div

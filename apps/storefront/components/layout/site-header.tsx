@@ -148,7 +148,7 @@ export function SiteHeader() {
               <div
                 className="h-28 w-44 shrink-0 rounded-2xl bg-grain"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, ${active.accent?.[0] ?? '#F8E7D6'}, ${active.accent?.[1] ?? '#B5571F'})`,
+                  backgroundImage: `linear-gradient(135deg, ${active.accent?.[0] ?? '#ECF7F1'}, ${active.accent?.[1] ?? '#0E7C5A'})`,
                 }}
               />
               <div>
