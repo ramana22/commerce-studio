@@ -2,7 +2,7 @@ import type { HttpTypes } from '@medusajs/types'
 import type { ProductCard, SugarShade } from '@sugar-store/types'
 import { centsToUsd } from '../medusa/money'
 import { mediaUrl } from '../media/url'
-import { displayImage, productGallery } from './placeholder'
+import { isPlaceholder, productGallery, productShot } from './placeholder'
 import type { ProductDetail, ProductDetailVariant } from './types'
 
 type Variant = HttpTypes.StoreProductVariant
@@ -56,6 +56,20 @@ function productImages(product: Product): string[] {
   return Array.from(new Set([...urls, ...fromMedusa]))
 }
 
+/**
+ * Real (non-placeholder) image URLs for a product, thumbnail first. A product's
+ * seeded picsum/loremflickr thumbnail or empty fields are skipped so genuinely
+ * uploaded photos — Admin Media (served from the Medusa backend's /static) or
+ * R2 — always win over the generated brand renders. Only when a product has no
+ * real media at all do we fall back to a render.
+ */
+function realImages(product: Product): string[] {
+  const candidates = [str(product.thumbnail), ...productImages(product)].filter(
+    (u): u is string => Boolean(u) && !isPlaceholder(u),
+  )
+  return Array.from(new Set(candidates))
+}
+
 function toShade(variant: Variant): SugarShade {
   const m = (variant.metadata ?? {}) as Record<string, unknown>
   return {
@@ -73,17 +87,15 @@ export function mapProductToCard(product: Product): ProductCard {
   const prices = first
     ? variantPrices(first)
     : { price_usd: 0, msrp_usd: null }
-  const images = productImages(product)
+  const seed = product.handle ?? product.id
+  const reals = realImages(product)
 
   return {
     id: product.id,
     handle: product.handle ?? '',
     title: product.title,
-    thumbnail: displayImage(
-      str(product.thumbnail) ?? images[0],
-      product.handle ?? product.id,
-    ),
-    hover_image: mediaUrl(str(m.hover_image)),
+    thumbnail: reals[0] ?? productShot(seed),
+    hover_image: mediaUrl(str(m.hover_image)) ?? reals[1] ?? null,
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
     is_bestseller: m.is_bestseller === true,
@@ -101,7 +113,8 @@ export function mapProductToCard(product: Product): ProductCard {
 /** Map a Medusa product into the full PDP detail shape. */
 export function mapProductToDetail(product: Product): ProductDetail {
   const m = meta(product)
-  const images = productImages(product)
+  const seed = product.handle ?? product.id
+  const reals = realImages(product)
   const variants: ProductDetailVariant[] = (product.variants ?? []).map((v) => {
     const vm = (v.metadata ?? {}) as Record<string, unknown>
     const prices = variantPrices(v)
@@ -118,20 +131,16 @@ export function mapProductToDetail(product: Product): ProductDetail {
   })
   const first = variants[0]
 
-  const seed = product.handle ?? product.id
-  // Real media is kept as-is (placeholder entries swapped per-index for render
-  // variety); products with no media get the three-shot brand gallery —
-  // studio, label macro, dark editorial — in the product's mood.
-  const gallery = images.length
-    ? images.map((img, idx) => displayImage(img, seed, idx))
-    : productGallery(seed)
+  // Real uploaded media is shown as-is; products with no real media get the
+  // three-shot brand gallery — studio, label macro, dark editorial.
+  const gallery = reals.length ? reals : productGallery(seed)
 
   return {
     id: product.id,
     handle: product.handle ?? '',
     title: product.title,
     description: product.description ?? null,
-    thumbnail: displayImage(str(product.thumbnail) ?? images[0], seed),
+    thumbnail: reals[0] ?? productShot(seed),
     images: gallery,
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
