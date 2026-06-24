@@ -29,4 +29,6 @@ export interface ProductDetail {
   price_usd: number
   msrp_usd: number | null
   variants: ProductDetailVariant[]
+  /** Raw `metadata.category` — see ProductCard.category in @sugar-store/types. */
+  category: string | null
 }

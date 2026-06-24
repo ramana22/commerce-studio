@@ -73,6 +73,13 @@ export function SiteHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 md:flex">
+          <Link
+            href="/shop"
+            onMouseEnter={() => setHovered(null)}
+            className="relative py-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-neutral-700 transition-colors hover:text-pink-600"
+          >
+            Shop All
+          </Link>
           {NAV_CATEGORIES.map((c) => (
             <Link
               key={c.slug}
@@ -192,6 +199,12 @@ export function SiteHeader() {
 
       {/* Mobile category scroller */}
       <nav className="no-scrollbar flex gap-4 overflow-x-auto border-t border-neutral-100 px-4 py-2 md:hidden">
+        <Link
+          href="/shop"
+          className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-700"
+        >
+          Shop All
+        </Link>
         {NAV_CATEGORIES.map((c) => (
           <Link
             key={c.slug}

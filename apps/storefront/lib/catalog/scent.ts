@@ -12,6 +12,7 @@
  * Pure TypeScript with no server/client dependencies so both RSC and client
  * components (PLP filtering) can share it.
  */
+import { CATEGORIES } from '@sugar-store/validators/category'
 
 export interface ScentMood {
   slug: string
@@ -101,6 +102,19 @@ export const SCENT_MOODS: ScentMood[] = [
 
 export function findMood(slug: string): ScentMood | undefined {
   return SCENT_MOODS.find((m) => m.slug === slug)
+}
+
+/**
+ * True when a product should get fragrance-only UI (scent mood badge, notes
+ * teaser, Scent DNA panel). Real Sugar Cosmetics imports tag
+ * `metadata.category` with one of the uppercase CATEGORIES enum values (LIPS,
+ * FACE, ...) — see packages/validators/src/category.ts. BodyScent demo
+ * fragrances tag it with a lowercase storefront nav handle (for-her, unisex,
+ * ...) or leave it unset, so anything that isn't a recognised real-catalog
+ * category is treated as a fragrance.
+ */
+export function isFragranceProduct(category: string | null | undefined): boolean {
+  return !category || !(CATEGORIES as readonly string[]).includes(category)
 }
 
 export function moodHref(slug: string): string {

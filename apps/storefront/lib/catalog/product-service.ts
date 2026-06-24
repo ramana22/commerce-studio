@@ -140,6 +140,30 @@ export async function searchProductCards(
   }
 }
 
+/**
+ * List ALL product cards, paginated and with no category filter — powers the
+ * catch-all "Shop All" page so every published product is reachable
+ * regardless of whether it's linked to one of the storefront's nav categories.
+ */
+export async function getAllProductCards(
+  page = 1,
+  pageSize = 48,
+): Promise<{ products: ProductCard[]; count: number }> {
+  const region_id = await regionId()
+  if (!region_id) return { products: [], count: 0 }
+  try {
+    const { products, count } = await sdk.store.product.list({
+      region_id,
+      fields: PRODUCT_FIELDS,
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+    })
+    return { products: products.map(mapProductToCard), count }
+  } catch {
+    return { products: [], count: 0 }
+  }
+}
+
 interface ListOptions {
   limit?: number
   bestsellersOnly?: boolean

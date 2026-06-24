@@ -7,6 +7,7 @@ import {
 } from '@/lib/catalog/product-service'
 import { pseudoRating } from '@/lib/catalog/rating'
 import { getProductReviews } from '@/lib/reviews/review-service'
+import { isFragranceProduct } from '@/lib/catalog/scent'
 import { ProductGallery } from '@/components/product/product-gallery'
 import { PdpActions } from '@/components/product/pdp-actions'
 import { ScentDna } from '@/components/product/scent-dna'
@@ -63,6 +64,8 @@ export default async function ProductPage({
     ),
     getProductReviews(product.id),
   ])
+
+  const isFragrance = isFragranceProduct(product.category)
 
   const badge = product.is_new_launch
     ? 'NEW'
@@ -150,8 +153,8 @@ export default async function ProductPage({
 
             <PdpActions product={product} />
 
-            {/* Animated note pyramid + wear meters */}
-            <ScentDna seed={product.handle || product.id} />
+            {/* Animated note pyramid + wear meters — fragrances only */}
+            {isFragrance ? <ScentDna seed={product.handle || product.id} /> : null}
 
             {/* Accordions */}
             <div className="mt-6">
@@ -160,10 +163,12 @@ export default async function ProductPage({
                   <p className="whitespace-pre-line">{product.description}</p>
                 </Accordion>
               ) : null}
-              <Accordion title="How to use">
-                Roll onto pulse points — wrists, neck and behind the ears. Reapply
-                through the day to refresh. Avoid rubbing, which breaks down the notes.
-              </Accordion>
+              {isFragrance ? (
+                <Accordion title="How to use">
+                  Roll onto pulse points — wrists, neck and behind the ears. Reapply
+                  through the day to refresh. Avoid rubbing, which breaks down the notes.
+                </Accordion>
+              ) : null}
               <Accordion title="Shipping & returns">
                 Free shipping on orders over $50. Easy 30-day returns on unopened
                 items. Ships within 1–2 business days.

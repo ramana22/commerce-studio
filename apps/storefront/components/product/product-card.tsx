@@ -3,7 +3,7 @@ import type { ProductCard as ProductCardData } from '@sugar-store/types'
 import { formatUsd } from '@/lib/medusa/money'
 import { pseudoRating } from '@/lib/catalog/rating'
 import { bottleImage } from '@/lib/catalog/placeholder'
-import { notesTeaser, scentProfile } from '@/lib/catalog/scent'
+import { isFragranceProduct, notesTeaser, scentProfile } from '@/lib/catalog/scent'
 import { AppImage } from '@/components/ui/app-image'
 import { Stars } from '@/components/ui/stars'
 import { ShadeSwatches } from './shade-swatches'
@@ -40,7 +40,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       : pseudoRating(product.id)
   const hover = product.hover_image ?? product.thumbnail
   const fallback = bottleImage(product.handle || product.id)
-  const profile = scentProfile(product.handle || product.id)
+  const isFragrance = isFragranceProduct(product.category)
+  const profile = isFragrance ? scentProfile(product.handle || product.id) : null
   const href = `/products/${product.handle}`
 
   return (
@@ -77,13 +78,15 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         ) : null}
 
         {/* Mood chip — anchors the card in the scent-mood navigation. */}
-        <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-ink shadow-sm backdrop-blur">
-          <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ backgroundColor: profile.mood.aura }}
-          />
-          {profile.mood.label}
-        </span>
+        {profile ? (
+          <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-ink shadow-sm backdrop-blur">
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: profile.mood.aura }}
+            />
+            {profile.mood.label}
+          </span>
+        ) : null}
       </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
@@ -96,9 +99,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             {product.title}
           </p>
         </Link>
-        <p className="truncate text-[11px] text-neutral-400">
-          {notesTeaser(profile)}
-        </p>
+        {profile ? (
+          <p className="truncate text-[11px] text-neutral-400">
+            {notesTeaser(profile)}
+          </p>
+        ) : null}
         <ShadeSwatches shades={product.shades} />
 
         <div className="mt-auto pt-2">
