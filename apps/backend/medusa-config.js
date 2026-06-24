@@ -23,6 +23,26 @@ if (process.env.SENTRY_DSN) {
 const modules = [
   // Reviews — product reviews owned in their own module (Phase 11).
   { resolve: './src/modules/review' },
+  // The local file provider defaults `backend_url` to the literal string
+  // "http://localhost:9000/static" when unconfigured, regardless of where
+  // the backend actually runs — so uploaded product photo URLs silently
+  // break (and the storefront falls back to placeholder art) on any
+  // deployment that isn't bare localhost:9000. Point it at the real backend
+  // URL instead.
+  {
+    resolve: '@medusajs/medusa/file',
+    options: {
+      providers: [
+        {
+          resolve: '@medusajs/medusa/file-local',
+          id: 'local',
+          options: {
+            backend_url: `${process.env.MEDUSA_BACKEND_URL ?? 'http://localhost:9000'}/static`,
+          },
+        },
+      ],
+    },
+  },
 ]
 if (
   process.env.SQUARE_ACCESS_TOKEN &&

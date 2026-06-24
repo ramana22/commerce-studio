@@ -80,7 +80,7 @@ export function mapProductToCard(product: Product): ProductCard {
     handle: product.handle ?? '',
     title: product.title,
     thumbnail: displayImage(
-      product.thumbnail ?? images[0],
+      str(product.thumbnail) ?? images[0],
       product.handle ?? product.id,
     ),
     hover_image: mediaUrl(str(m.hover_image)),
@@ -131,7 +131,7 @@ export function mapProductToDetail(product: Product): ProductDetail {
     handle: product.handle ?? '',
     title: product.title,
     description: product.description ?? null,
-    thumbnail: displayImage(product.thumbnail ?? images[0], seed),
+    thumbnail: displayImage(str(product.thumbnail) ?? images[0], seed),
     images: gallery,
     badge: str(m.badge),
     is_new_launch: m.is_new_launch === true,
