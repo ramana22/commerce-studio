@@ -94,6 +94,7 @@ export function mapProductToCard(product: Product): ProductCard {
     shades: (product.variants ?? []).map(toShade),
     rating_average: typeof m.rating_average === 'number' ? m.rating_average : null,
     rating_count: typeof m.rating_count === 'number' ? m.rating_count : null,
+    category: str(m.category),
   }
 }
 
@@ -142,5 +143,6 @@ export function mapProductToDetail(product: Product): ProductDetail {
     price_usd: first?.price_usd ?? 0,
     msrp_usd: first?.msrp_usd ?? null,
     variants,
+    category: str(m.category),
   }
 }

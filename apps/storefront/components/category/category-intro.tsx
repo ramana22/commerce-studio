@@ -10,11 +10,14 @@ export function CategoryIntro({
   tagline,
   count,
   accent,
+  noun = 'fragrance',
 }: {
   heading: string
   tagline?: string
   count: number
   accent?: [string, string]
+  /** Singular noun for the count line, e.g. "product" → "12 products". */
+  noun?: string
 }) {
   return (
     <section className="relative overflow-hidden text-white">
@@ -30,7 +33,7 @@ export function CategoryIntro({
       <div className="relative mx-auto max-w-7xl px-6 py-16 sm:py-20">
         <Reveal>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/70">
-            {count} {count === 1 ? 'fragrance' : 'fragrances'}
+            {count} {count === 1 ? noun : `${noun}s`}
           </p>
           <h1 className="mt-2 font-display text-5xl font-semibold sm:text-6xl">
             {heading}

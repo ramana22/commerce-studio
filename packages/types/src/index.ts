@@ -55,6 +55,12 @@ export interface ProductCard {
   rating_average: number | null
   /** Number of approved reviews backing the aggregate. */
   rating_count: number | null
+  /**
+   * Raw `metadata.category` from Medusa (e.g. "LIPS" for a real catalog import,
+   * or a storefront nav handle like "for-her" for a BodyScent demo fragrance).
+   * Used to decide whether fragrance-only UI (scent mood, notes) applies.
+   */
+  category: string | null
 }
 
 /** Cart line item populated from Medusa, enriched with Sugar metadata. */

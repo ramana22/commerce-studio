@@ -120,8 +120,8 @@ async function fetchCategoryMap(auth: string): Promise<Map<string, string>> {
   const data = (await res.json()) as { product_categories: MedusaCategory[] }
   const map = new Map<string, string>()
   for (const cat of data.product_categories) {
-    map.set(cat.handle, cat.id)
-    map.set(cat.name.toUpperCase(), cat.id)
+    map.set(cat.handle.trim().toLowerCase(), cat.id)
+    map.set(cat.name.trim().toUpperCase(), cat.id)
   }
   return map
 }
@@ -414,9 +414,17 @@ async function main(): Promise<void> {
   }
 
   for (const product of products) {
-    // Resolve category ID
-    const catName = String(product.metadata['category'] ?? '')
-    const categoryId = categoryMap.get(catName) ?? categoryMap.get(catName.toLowerCase())
+    // Resolve category ID — metadata.category is either a real-catalog enum
+    // value (e.g. "LIPS", matched against category names) or a nav handle
+    // (e.g. "for-her", matched against category handles).
+    const catName = String(product.metadata['category'] ?? '').trim()
+    const categoryId =
+      categoryMap.get(catName.toUpperCase()) ?? categoryMap.get(catName.toLowerCase())
+    if (catName && !categoryId) {
+      console.log(
+        `  ⚠  ${product.handle}: no Medusa category matches "${catName}" — it will be imported uncategorised. Create a category named or handled "${catName}" first.`,
+      )
+    }
 
     const apiVariants: VariantApiPayload[] = product.variants.map(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
