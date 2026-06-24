@@ -56,9 +56,17 @@ export function bottleImage(seed: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-/** True when a URL is missing or a seeded demo placeholder (not real media). */
+/**
+ * True only when a product has NO image URL at all.
+ *
+ * Seeded demo photos (picsum.photos / loremflickr.com) are intentionally
+ * treated as real media here, so the storefront shows exactly the image
+ * attached to each product in the Medusa admin. The generated brand render is
+ * used only as a last resort, when a product genuinely has no image. (Upload a
+ * real photo to a product's Media section and it shows automatically.)
+ */
 export function isPlaceholder(url: string | null | undefined): boolean {
-  return !url || url.includes('picsum.photos') || url.includes('loremflickr.com')
+  return !url
 }
 
 const SHAPE_COUNT = 4
